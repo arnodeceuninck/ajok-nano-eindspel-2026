@@ -324,6 +324,31 @@
     ::-webkit-scrollbar-track      { background:transparent; }
     ::-webkit-scrollbar-thumb      { background:var(--border); }
     ::-webkit-scrollbar-thumb:hover{ background:var(--text-dim); }
+
+    /* ── PREFETCH PROGRESS BAR ── */
+    #prefetch-bar {
+      position:fixed; top:0; left:0; right:0; z-index:5000;
+      background:rgba(7,7,16,.97); border-bottom:1px solid var(--border);
+      display:flex; align-items:center; gap:.8rem;
+      padding:0 .9rem; height:26px;
+      transition:opacity .6s ease, transform .6s ease;
+    }
+    #prefetch-bar.hidden {
+      opacity:0; pointer-events:none; transform:translateY(-100%);
+    }
+    #prefetch-label {
+      font-size:.44rem; letter-spacing:.25em; color:var(--text-mid);
+      white-space:nowrap;
+    }
+    #prefetch-track {
+      flex:1; height:3px; background:rgba(0,255,180,.06);
+      border:1px solid var(--border);
+    }
+    #prefetch-fill {
+      height:100%; width:0%;
+      background:var(--accent); box-shadow:0 0 6px var(--accent);
+      transition:width .35s ease;
+    }
   </style>
 </head>
 <body>
@@ -343,6 +368,12 @@
 
 <!-- flash overlay -->
 <div id="flash"></div>
+
+<!-- asset prefetch / offline progress bar -->
+<div id="prefetch-bar" class="hidden">
+  <span id="prefetch-label">LADEN…</span>
+  <div id="prefetch-track"><div id="prefetch-fill"></div></div>
+</div>
 
 <!-- ══════════════════════════════════════════
      SCREEN · HOME
@@ -468,6 +499,13 @@
 </div>
 
 <script>
+// ─────────────────────────────────────────────────────────────
+//  SERVICE WORKER REGISTRATION
+// ─────────────────────────────────────────────────────────────
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js').catch(() => {});
+}
+
 // ─────────────────────────────────────────────────────────────
 //  GAME REGISTRY
 //  To add a game: push a new entry here.
@@ -690,7 +728,61 @@ document.addEventListener('DOMContentLoaded', () => {
   checkNfcSupport();
   updateClock();
   setInterval(updateClock, 10_000);
+  prefetchAssets();
 });
+
+// ─────────────────────────────────────────────────────────────
+//  ASSET PREFETCH  (caches all audio for offline use)
+// ─────────────────────────────────────────────────────────────
+async function prefetchAssets() {
+  // Each game has two audio files: explanation + solution
+  const urls = GAMES.flatMap(g => [
+    `audio/explanations/${g.id}.mp3`,
+    `audio/solutions/${g.id}.mp3`,
+  ]);
+
+  // On repeat visits, check the SW cache first — skip if everything is already there
+  if ('caches' in window) {
+    try {
+      const cache = await caches.open('ajok-tag-v1');
+      const keys  = new Set((await cache.keys()).map(r => new URL(r.url).pathname));
+      const base  = new URL('.', location.href).pathname; // e.g. "/tag-scan-app/"
+      const allCached = urls.every(u => keys.has(base + u));
+      if (allCached) return;
+    } catch { /* ignore — will just prefetch again */ }
+  }
+
+  // Wait for the service worker to be active so it can intercept & cache the fetches
+  if ('serviceWorker' in navigator) {
+    await navigator.serviceWorker.ready.catch(() => {});
+  }
+
+  const bar   = document.getElementById('prefetch-bar');
+  const label = document.getElementById('prefetch-label');
+  const fill  = document.getElementById('prefetch-fill');
+  bar.classList.remove('hidden');
+
+  let done = 0;
+  const total = urls.length;
+  const update = () => {
+    label.textContent = `LADEN · ${done}/${total}`;
+    fill.style.width  = `${Math.round((done / total) * 100)}%`;
+  };
+  update();
+
+  // Fetch all files; SW intercepts each one and caches it.
+  // 404s (audio not yet uploaded) are fine — the app shows an error gracefully.
+  await Promise.allSettled(
+    urls.map(url =>
+      fetch(url).finally(() => { done++; update(); })
+    )
+  );
+
+  label.textContent = 'OFFLINE KLAAR ✓';
+  fill.style.width  = '100%';
+  await new Promise(r => setTimeout(r, 1800));
+  bar.classList.add('hidden');
+}
 
 function updateClock() {
   document.getElementById('sbar-time').textContent =
