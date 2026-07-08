@@ -513,201 +513,270 @@ if ('serviceWorker' in navigator) {
 // ─────────────────────────────────────────────────────────────
 const GAMES = [
   {
-    id: '10BAL', title: '10 Baltoetsen',
-    description: `Raak de bal 10 keer achter elkaar aan zonder dat hij op de grond valt!
+    id: '10BAL', title: 'Tienbal',
+    description: `Probeer samen de bal minstens 10 keer in de lucht te houden zonder dat hij op de grond valt.
+Alle teamleden mogen meehelpen: gebruik hoofd, handen, voeten, knieën — alles mag!
+Als de bal op de grond valt, begin je opnieuw bij 0.
 
-Gebruik je hoofd, voeten, knieën, schouders of handen — alles mag!
-Alle teamleden mogen samenwerken en de bal doorgeven.
-Als de bal de grond raakt, begin je opnieuw bij 0.
-Bereik 10 aanrakingen achter elkaar om dit spel te voltooien.`,
+Uitbreiding: verdeel de groep in twee teams en probeer de bal van elkaar af te pakken.
+
+Benodigdheden: bal`,
   },
   {
-    id: 'LANDR', title: 'Land zonder R en I',
-    description: `Noem landen, steden of plaatsen zonder de letters R en I te gebruiken!
+    id: 'ACHTE', title: 'Achteruit Lopen',
+    description: `Loop een parcours op het kampterrein achteruit af.
+Zet eventueel obstakels of objecten uit om omheen te lopen.
+Pas op dat je niet struikelt of botst!
+Wie doet het parcours het snelst?
 
-Iedereen zegt om de beurt een land, stad of dorp.
-De naam mag geen R en geen I bevatten (hoofdletters of kleine letters).
-Wie een naam zegt mét R of I, valt af.
-Wie niets kan bedenken binnen 5 seconden, valt ook af.
-Wie als laatste overblijft, wint het spel!`,
+Benodigdheden: optioneel een parcours of objecten om omheen te lopen`,
   },
   {
-    id: 'MEMOR', title: 'Memory',
-    description: `Vind alle kaartenpaartjes door je geheugen te gebruiken!
+    id: 'BRIEF', title: 'Brief Schrijven',
+    description: `Schrijf een brief (of maak een tekening) aan jezelf, bedoeld om over een jaar te lezen.
+Schrijf daarin onder andere:
+  - Wat je allemaal leuk vond aan het kamp deze week
+  - Grappige momenten of mooie herinneringen
+  - Je dromen of wensen voor het komende jaar
 
-Leg alle kaarten omgekeerd (beeldkant naar beneden) neer op een vlakke ondergrond.
-Om de beurt draait een speler twee kaarten om.
-Als de twee kaarten een paartje vormen, mag je ze houden en nog een keer spelen.
-Als ze niet overeenkomen, draai je beide kaarten terug om.
-Wie de meeste paartjes heeft als alle kaarten weg zijn, wint!`,
-  },
-  {
-    id: 'PARKO', title: 'Parkourtje',
-    description: `Bouw samen een parcours en doorloop het zo snel en feilloos mogelijk!
+Vouw de brief op, schrijf je naam erop en bewaar hem goed.
 
-Bouw met de groep een parcours van obstakels in de omgeving.
-Gebruik wat je vindt: takken, stenen, stoelen, touw...
-Elk teamlid loopt het parcours één keer.
-Wie het parcours het snelst en zonder fouten doorloopt, wint!
-
-Voorbeelden van obstakels:
-- Balanceer op een balk
-- Kruip onder een touw door
-- Ren zigzag tussen paaltjes
-- Spring over een obstakel`,
-  },
-  {
-    id: 'KAART', title: 'Kaartenhuisje',
-    description: `Bouw samen een kaartenhuisje van minstens 3 verdiepingen hoog!
-
-Gebruik gewone speelkaarten (de begeleider heeft ze bij zich).
-Het huisje moet minstens 3 verdiepingen hoog zijn.
-Je mag met z'n allen samenwerken.
-Het huisje moet minstens 5 seconden zelfstandig blijven staan.
-Waaier of blaas niet tegen het huisje!
-
-Tip: begin met een stabiele basis en bouw rustig verder omhoog.`,
-  },
-  {
-    id: 'MASTE', title: 'Mastermind',
-    description: `Raad de geheime kleurencode van 4 kleuren!
-
-Eén speler (de codemaker) verzint in het geheim een code van 4 kleuren.
-Gebruik de kleuren: rood, blauw, groen, geel, wit, zwart.
-Kleuren mogen herhaald worden in de code.
-
-De rest probeert de code te raden in maximaal 10 beurten.
-Na elke poging geeft de codemaker aanwijzingen:
-- ZWARTE STEEN = juiste kleur op de juiste positie
-- WITTE STEEN  = juiste kleur maar op de verkeerde positie
-
-Wie de code raadt voor de beurten op zijn, wint!`,
-  },
-  {
-    id: 'RAADS', title: 'Logische Raadsels',
-    description: `Los samen een reeks wiskundige en logische puzzels op!
-
-De begeleider stelt de raadsels één voor één voor.
-Werk samen als groep om de oplossingen te vinden.
-
-Voorbeelden van raadsels:
-- Ik heb steden zonder huizen, bossen zonder bomen, water zonder vissen. Wat ben ik? (Een kaart)
-- Een boer heeft 17 schapen. Alle behalve 9 sterven. Hoeveel zijn er over? (9)
-- Wat gaat op 4 benen 's morgens, 2 benen 's middags, 3 benen 's avonds? (De mens)
-- Maak van 8 8 8 8 = 500 met enkel plus-tekens. (888 + 88 + 8 + 8 + 8)`,
-  },
-  {
-    id: 'TRESR', title: 'Ik ga op reis…',
-    description: `Het klassieke geheugenspel — onthoud de steeds langere reislijst!
-
-De eerste speler zegt: "Ik ga op reis en ik neem mee: een [iets]."
-De volgende herhaalt de zin EN voegt een nieuw item toe aan het einde.
-Zo gaat het verder: elke speler herhaalt alles en voegt iets toe.
-
-Wie iets vergeet of in de verkeerde volgorde zegt, valt af.
-Wie als laatste overblijft zonder fouten, wint!`,
+Benodigdheden: papier, pen of potlood`,
   },
   {
     id: 'DODVI', title: 'Dode Vis',
-    description: `Wie kan het langst roerloos de "dode vis" spelen?
-
-Iedereen gaat op de grond liggen als een dode vis — zo stil en levensloos mogelijk.
-Lachen, bewegen, knipperen of geluid maken is verboden!
-De begeleider probeert de groep aan het lachen te krijgen door grappige dingen te zeggen of te doen.
-Wie beweegt of lacht, is eruit.
-Wie als laatste nog steeds de perfecte dode vis speelt, wint!`,
-  },
-  {
-    id: 'BRIEF', title: 'Brief over het Kamp',
-    description: `Schrijf samen een brief over jullie kampbeleving!
-
-De brief moet minstens een halve bladzijde zijn.
-Zorg dat iedereen minstens één zin bijdraagt.
-
-Denk aan:
-- Wat vonden jullie het leukste moment tot nu toe?
-- Welk grappig voorval is er geweest?
-- Wat hebben jullie geleerd of ontdekt?
-- Wie zijn nieuwe vrienden geworden?
-
-Lees de brief daarna hardop voor aan de begeleider.`,
-  },
-  {
-    id: 'ZINDO', title: 'Zin Doorzeggen',
-    description: `Fluister een zin door en kijk hoe hij verandert!
-
-De begeleider fluistert een lange, ingewikkelde zin in het oor van de eerste speler.
-Die fluistert de zin door aan de volgende — slechts één keer, niet herhalen!
-Zo gaat het verder tot de laatste speler.
-De laatste speler zegt hardop wat hij gehoord heeft.
-Vergelijk met de originele zin — vaak met grappige resultaten!
-
-Speel meerdere rondes met steeds een andere beginstarter.`,
-  },
-  {
-    id: 'TEKEN', title: 'Tekenwedstrijd',
-    description: `Teken iets van het kamp in 5 minuten — de groep stemt!
-
-De begeleider kiest een onderwerp en iedereen tekent hetzelfde, elk op zijn eigen blaadje.
-Je hebt precies 5 minuten.
-Daarna stemt de groep voor de mooiste OF grappigste tekening.
-
-Suggesties voor onderwerpen:
-- Het kampveld vanuit de lucht
-- Jouw kampgenoot als superheld
-- Het grappigste kampmoment
-- De begeleider als cartoon`,
-  },
-  {
-    id: 'ACHTE', title: 'Achteruitlopen',
-    description: `Loop een volledig rondje achterwaarts rond het kampveld!
-
-Alle teamleden starten op dezelfde plek.
-Loop samen achteruitwaarts een volledig rondje rond het kampveld.
-Niemand mag omdraaien of omvallen!
-Jullie mogen elkaar helpen en waarschuwen voor obstakels.
-Het rondje is voltooid als iedereen terug op de startplek staat.
-
-Omdraaien = spel opnieuw beginnen.`,
+    description: `Ga plat op de grond liggen.
+Lig 2 minuten muisstil en zonder enige beweging.
+Niet bewegen, niet lachen, niet knipperen!
+Wie beweegt, valt af.
+Wie het volhoudt, wint.`,
   },
   {
     id: 'DOOLH', title: 'Doolhof',
-    description: `Los het doolhof zo snel mogelijk op!
+    description: `Iedereen krijgt een papier met een doolhof.
+Teken een weg van start tot finish zonder op een muur te botsen.
+Er zijn verschillende moeilijkheidsgraden beschikbaar — kies je uitdaging!
+Wie het doolhof oplost, mag een moeilijker exemplaar proberen.
 
-De begeleider geeft jullie het doolhofblad en een pen.
-Vind samen de weg van het begin tot de uitgang.
-Je mag de pen van het papier tillen, maar ga niet door muren!
-Werk samen: iemand houdt het papier, iemand tekent, iemand kijkt mee.
-De begeleider stopt de tijd — probeer het zo snel mogelijk te doen!
-
-Tip: werk van de uitgang terug naar het begin.`,
+Benodigdheden: papieren met doolhoven (verschillende moeilijkheidsgraden), pen`,
   },
   {
-    id: 'VRKLE', title: 'Onherkenbaar Verkleden',
-    description: `Verklee je zo goed mogelijk zodat niemand je herkent!
+    id: 'EVOLU', title: 'Evolutie',
+    description: `Iedereen begint als 'Ei' (gehurkt lopen, "tok tok" zeggen).
+Zoek iemand van hetzelfde niveau en speel steen-schaar-papier.
 
-Iedereen heeft 5 minuten om zich zo onherkenbaar mogelijk te verkleden.
-Gebruik kleding, sjaals, hoeden, brillen, schmink, bladeren... wees creatief!
-Na 5 minuten beoordeelt de begeleider wie het meest onherkenbaar is.
-De meest onherkenbare persoon wint het spel!
+De niveaus (van laag naar hoog):
+  1. Ei        — gehurkt lopen, "tok tok" zeggen
+  2. Kip       — halfhoog lopen, fladderen met de armen
+  3. Dinosaurus — grote stappen, brullen
+  4. Superheld  — hand omhoog steken, je hebt gewonnen!
 
-Tip: maak een foto van het resultaat als herinnering!`,
+Win je? Je evolueert naar het volgende niveau.
+Verlies je? Je zakt één niveau terug (behalve als je al een Ei bent).
+Je mag alleen spelen tegen iemand van hetzelfde niveau.
+Bereik niveau 4 (Superheld) om het spel te winnen!`,
   },
   {
-    id: 'TIKBO', title: 'Tik Tak Boem',
-    description: `Geef de bom snel door — wie hem houdt als de tijd om is, valt af!
+    id: 'IEMNI', title: 'Iemand Is Hem',
+    description: `De spelers gaan verspreid klaar staan.
+De leiding gooit een bal in de groep.
+Wie de bal oppakt, mag proberen een ander speler af te gooien met de bal.
+Word je geraakt door de bal? Dan ga je aan de kant.
+Als er drie spelers aan de kant staan, mag de eerste van die drie weer meedoen.
+Het spel gaat door tot er nog maar één iemand over is.
 
-De begeleider bedenkt een categorie (bijv. "dieren met 4 poten").
-De eerste speler houdt de "bom" (een bal, knuffel of ander voorwerp).
-Je mag de bom pas doorgeven als je iets in de categorie hebt gezegd.
-Wie de bom vasthoudt als de begeleider "BOEM!" roept, valt af.
+Benodigdheden: bal`,
+  },
+  {
+    id: 'KAART', title: 'Kaartenhuisje',
+    description: `Gebruik een gewoon boek speelkaarten om een kaartenhuisje te bouwen.
+Probeer het zo hoog mogelijk te maken.
+Stapel voorzichtig, want het kan snel instorten!
+Wie bouwt het hoogste kaartenhuisje?
 
-Categorievoorbeelden:
-- Landen in Europa
-- Dingen in een slaapzak
-- Woorden die eindigen op -jes
+Benodigdheden: boek speelkaarten`,
+  },
+  {
+    id: 'KEGEL', title: 'Kegelvoetbal',
+    description: `Iedereen kiest zijn eigen locatie en zet twee kegels ondersteboven neer.
+Spelers proberen elkaars kegels om te gooien door een bal te rollen of te gooien.
+Regel: je moet minstens 5 stappen verwijderd zijn van een kegel om die te mogen omgooien.
+Worden jouw kegels omgegooid? Dan lig je eruit!
+Wie als laatste zijn kegels overeind heeft staan, wint.
 
-De begeleider roept "BOEM!" op een onverwacht moment.`,
+Benodigdheden: kegels (2 per speler), bal`,
+  },
+  {
+    id: 'KOMDU', title: 'Komisch Duo',
+    description: `Iedereen krijgt een post-it op het voorhoofd geplakt met een bekende naam.
+Alle namen zijn beroemde duo's:
+  bijv. SpongeBob & Patrick, Suske & Wiske, Mario & Luigi, Peper & Zout.
+
+Iedereen loopt rond en mag aan anderen alleen ja/nee-vragen stellen om te ontdekken wie ze zijn.
+Zodra je weet wie je bent, zoek je zo snel mogelijk je 'wederhelft' in de groep.
+Als je je partner gevonden hebt, gaan jullie samen op de grond zitten.
+Wie vindt zijn duo het snelst?
+
+Benodigdheden: post-its, pen`,
+  },
+  {
+    id: 'LANDR', title: 'Land van Genernogie',
+    description: `Dit is een raadselspel. De kinderen zeggen telkens een voorwerp.
+De moni laat weten of dat voorwerp wel of niet mee mag naar het land van Genernogie.
+
+Het geheim: alleen voorwerpen zonder de letters 'r' of 'i' mogen mee!
+Voorbeelden die mee mogen: schoen, pet, tas, bed, stoel.
+Voorbeelden die niet mee mogen: paraplu, drinkbus, fiets, dieren.
+
+Tip voor de moni: onthoud de regel zelf goed, maar verklap hem niet!
+Het spel eindigt als iedereen de regel heeft ontdekt.`,
+  },
+  {
+    id: 'MEMOR', title: 'Memory',
+    description: `Leg alle kaarten omgekeerd op tafel of op de grond.
+Duid een kaart aan en draai die om.
+Draai daarna een tweede kaart om.
+Zijn de twee kaarten hetzelfde? Dan mogen ze open blijven liggen.
+Zo niet, draai ze dan terug om — en probeer het te onthouden voor later!
+Het doel is om alle kaartparen te vinden.
+Wie vindt de meeste paren?
+
+Benodigdheden: memory spel`,
+  },
+  {
+    id: 'NEEME', title: 'Ik Neem Mee',
+    description: `Iedereen zit of staat in een kring.
+De eerste speler zegt: "Ik ga op reis en ik neem mee: [voorwerp]."
+De tweede speler herhaalt dit en voegt een extra voorwerp toe.
+Elk volgend persoon herhaalt de volledige lijst en voegt een eigen voorwerp toe.
+Wie de volgorde vergeet of een voorwerp overslaat, valt af.
+Hoe lang kan de groep de reeks bijhouden?`,
+  },
+  {
+    id: 'NINJA', title: 'Ninja',
+    description: `Iedereen staat in een kring en neemt een 'ninja-houding' aan.
+Om de beurt mag een speler in één vloeiende beweging proberen de hand of arm van een buurman te raken.
+De verdediger mag ook in één vloeiende beweging ontwijken.
+Na de actie bevries je meteen in je nieuwe houding — niet meer bewegen!
+Word je op een hand of arm geraakt? Dan valt die arm eruit.
+Verlies je beide armen? Dan val je af.
+De laatste ninja wint!`,
+  },
+  {
+    id: 'OMGVE', title: 'Omgekeerd Verstoppertje',
+    description: `Ook wel "Sardientjes" genoemd!
+Slechts één persoon gaat zich verstoppen.
+De rest sluit de ogen en telt tot 50.
+Daarna gaat iedereen individueel op zoek.
+Vind je de verstopplek? Zeg of verklap dan niets — kruip er stilletjes bij!
+Langzaam zit de hele groep als sardines in een blik op dezelfde plek.
+Het spel eindigt als de allerlaatste persoon hen vindt.`,
+  },
+  {
+    id: 'PANGP', title: 'Pang Pang',
+    description: `Iedereen staat in een kring. De moni staat in het midden.
+De moni draait rond, wijst plots naar iemand en roept "PANG!"
+Die persoon moet zo snel mogelijk bukken.
+De twee personen links en rechts van de gebukte persoon moeten naar elkaar wijzen en "PANG!" roepen.
+De traagste van die twee valt af. Wie vergeet te bukken, valt ook af.
+
+Finale: de laatste twee staan rug aan rug, zetten een afgesproken aantal stappen,
+draaien zich dan om en roepen "PANG!" naar elkaar.
+De snelste wint!`,
+  },
+  {
+    id: 'PICTO', title: 'Pictionary',
+    description: `De moni zegt stiekem een woord tegen één deelnemer.
+Die persoon begint het woord te tekenen — geen letters, cijfers of gebarentaal!
+De rest probeert zo snel mogelijk te raden wat het getekende woord is.
+Wie het correct raadt, mag het volgende woord tekenen.
+Speel meerdere rondes met steeds andere woorden.
+
+Benodigdheden: pen, papier`,
+  },
+  {
+    id: 'SSPLE', title: 'Levend Steen Schaar Papier',
+    description: `Verdeel de groep in twee teams.
+Elk team trekt zich even terug om stiekem één symbool te kiezen:
+  - Steen  = gehurkt zitten met gebalde vuisten
+  - Papier = armen wijd gespreid
+  - Schaar = armen gekruist voor de borst
+
+De teams staan tegenover elkaar.
+Op het signaal van de moni laat iedereen tegelijk het gekozen symbool zien.
+Steen wint van Schaar — Schaar wint van Papier — Papier wint van Steen.
+Het verliezende team rent hard terug naar hun achterlijn.
+Het winnende team probeert hen te tikken voor ze de lijn bereiken.
+Getikte spelers wisselen van team.
+Speel meerdere rondes!`,
+  },
+  {
+    id: 'STOPC', title: 'Tikkertje Stopcontact',
+    description: `Gewoon tikkertje, maar met een twist!
+Word je getikt? Dan zet je je beide handen op je heupen: jij bent nu het 'stopcontact'.
+Je staat stil en kan niet meer rennen.
+Iemand anders kan jou bevrijden door met hun twee armen door jouw stopcontact te gaan.
+De tikker probeert zoveel mogelijk mensen tegelijk bevroren te houden.
+Wie is er tikker als de tijd om is?`,
+  },
+  {
+    id: 'TIKBO', title: 'Tik-tak-boem',
+    description: `Iedereen staat in een kring.
+Één persoon zit in het midden, sluit de ogen en zegt luidop: "tik-tak, tik-tak, tik-tak..."
+De mensen in de kring geven ondertussen de bal snel door aan elkaar.
+Op een willekeurig moment roept de persoon in het midden ineens "BOEM!"
+Wie op dat moment de bal vasthoudt, valt af.
+Ga door tot er één persoon overblijft.
+
+Benodigdheden: bal (de 'bom')`,
+  },
+  {
+    id: 'TIKST', title: 'Tikkertje Standbeeld',
+    description: `Één of twee tikkers proberen de rest te tikken.
+Word je getikt? Dan bevries je meteen in een grappige standbeeldhouding met je benen wijd.
+Je kunt alleen worden verlost als een vrije speler dapper tussen je benen door kruipt.
+Het spel is afgelopen als iedereen bevroren is, of als de tikkers na 5 minuten doodop zijn.`,
+  },
+  {
+    id: 'VERHA', title: 'Woord-Estafette',
+    description: `Iedereen zit in een kring.
+De moni begint een verhaal met slechts één woord (bijv. "Er").
+De volgende persoon zegt het volgende woord ("vloog"), de derde vult aan ("een"), enzovoort.
+Het doel is om in razend tempo een grammaticaal kloppend verhaal te bouwen —
+of een super bizar verhaal, dat mag ook!
+Wie te lang aarzelt of een woord zegt waarmee de zin vastloopt,
+valt af of moet een gekke actie uitvoeren.`,
+  },
+  {
+    id: 'VOGEL', title: 'Alle Vogels Vliegen',
+    description: `Iedereen staat in een kring en trommelt zachtjes met de handen op de bovenbenen.
+De moni roept steeds: "[Diernaam] vliegen!"
+Kan het dier vliegen (bijv. "De mussen vliegen!")? Dan moet iedereen vliegbewegingen maken.
+Kan het dier niet vliegen (bijv. "De olifanten vliegen!")? Dan houden de handen stijf op de benen.
+Wie per ongeluk toch vliegt (of stil blijft bij een echte vogel), valt af of krijgt een tegenprestatie.
+Hoe snel kan de moni je foppen?`,
+  },
+  {
+    id: 'WOLFH', title: 'Wolfje, Hoe Laat Is Het?',
+    description: `Iedereen ("de geiten") start op een lijn achteraan.
+De wolf staat met zijn rug naar hen toe tegen een muur.
+De groep roept samen: "Wolfje, wolfje, hoe laat is het?"
+De wolf zegt een getal, bijvoorbeeld "3 uur" — iedereen zet dan 3 stappen vooruit.
+Dit herhaalt zich, totdat de wolf ineens "ETENSTIJD!" roept.
+Dan draait de wolf zich om en jaagt op de geiten.
+De eerste geit die getikt wordt, is de nieuwe wolf!`,
+  },
+  {
+    id: 'ZINDO', title: 'Zin Doorfluisteren',
+    description: `Alle deelnemers staan op een rij.
+De moni fluistert een lange zin in het oor van de eerste persoon.
+Die fluistert de zin door aan de volgende — slechts één keer, niet herhalen!
+Zo gaat het verder tot de laatste persoon.
+De laatste persoon zegt de zin dan luidop.
+Vergelijk met de originele zin — vaak met grappige resultaten!
+
+Voorbeeldzin: "Aliens kunnen schatten verstoppen over heel de planeet, maar er zijn
+altijd mensen die sterker zijn dan de aliens en de code tot de schat kunnen ontcijferen."`,
   },
 ];
 
