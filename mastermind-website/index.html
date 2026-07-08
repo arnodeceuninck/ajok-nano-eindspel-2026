@@ -1,0 +1,1216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NEXUS BREACH PROTOCOL</title>
+  <style>
+    :root {
+      --bg:          #070710;
+      --panel:       rgba(0,255,180,.025);
+      --border:      rgba(0,255,180,.14);
+      --accent:      #00ffc8;
+      --danger:      #ff3040;
+      --warning:     #ffaa00;
+      --success:     #00ff88;
+      --text:        #c8ffe8;
+      --text-mid:    #4a9a70;
+      --text-dim:    #2a5a40;
+      --mono:        'Courier New', 'Lucida Console', monospace;
+      --glow-a:      0 0 10px rgba(0,255,200,.7), 0 0 35px rgba(0,255,200,.3);
+      --glow-d:      0 0 10px rgba(255,48,64,.7),  0 0 35px rgba(255,48,64,.3);
+      --glow-s:      0 0 10px rgba(0,255,136,.7),  0 0 35px rgba(0,255,136,.3);
+    }
+
+    *        { margin:0; padding:0; box-sizing:border-box; }
+    html,body { width:100%; height:100%; overflow:hidden;
+                background:var(--bg); color:var(--text);
+                font-family:var(--mono); user-select:none; }
+
+    /* ── scanlines ── */
+    body::before {
+      content:''; position:fixed; inset:0; pointer-events:none; z-index:9100;
+      background: repeating-linear-gradient(
+        to bottom, transparent 0, transparent 3px,
+        rgba(0,0,0,.04) 3px, rgba(0,0,0,.04) 4px
+      );
+    }
+
+    /* ── starfield canvas ── */
+    #stars { position:fixed; inset:0; z-index:0; }
+
+    /* ── corner brackets ── */
+    .crn { position:fixed; width:48px; height:48px; opacity:.32; z-index:20; }
+    .crn-tl { top:16px; left:16px;   border-top:1px solid var(--accent); border-left:1px solid var(--accent);  }
+    .crn-tr { top:16px; right:16px;  border-top:1px solid var(--accent); border-right:1px solid var(--accent); }
+    .crn-bl { bottom:32px; left:16px;  border-bottom:1px solid var(--accent); border-left:1px solid var(--accent);  }
+    .crn-br { bottom:32px; right:16px; border-bottom:1px solid var(--accent); border-right:1px solid var(--accent); }
+
+    /* ── status bar ── */
+    #sbar {
+      position:fixed; bottom:0; left:0; right:0; height:26px;
+      background:var(--panel); border-top:1px solid var(--border);
+      display:flex; align-items:center; padding:0 1.5rem; gap:2.5rem; z-index:20;
+    }
+    .si { font-size:.5rem; letter-spacing:.22em; color:var(--text-dim); }
+    .si b { color:var(--text-mid); font-weight:normal; }
+
+    /* ── screens ── */
+    .screen {
+      position:fixed; inset:0;
+      display:flex; flex-direction:column;
+      align-items:center; justify-content:center;
+      z-index:10; padding:1rem 1.5rem 32px;
+      opacity:0; pointer-events:none;
+      transition:opacity .55s ease;
+    }
+    .screen.active { opacity:1; pointer-events:all; }
+
+    /* ── shared typography ── */
+    .page-title {
+      font-size:clamp(.85rem,2vw,1.15rem);
+      letter-spacing:.55em; color:var(--accent);
+      text-shadow:var(--glow-a); text-align:center;
+      margin-bottom:.3rem;
+    }
+    .page-sub {
+      font-size:.58rem; letter-spacing:.38em;
+      color:var(--text-mid); text-align:center;
+      margin-bottom:2.2rem;
+    }
+    .section-lbl {
+      font-size:.58rem; letter-spacing:.38em;
+      color:var(--text-mid); text-align:center;
+      margin-bottom:.9rem;
+    }
+
+    /* ── timer ── */
+    #timer {
+      font-size:clamp(3.8rem,12vw,8.5rem);
+      font-weight:700; letter-spacing:.04em;
+      font-variant-numeric:tabular-nums;
+      color:var(--accent); text-shadow:var(--glow-a);
+      line-height:1; text-align:center;
+      transition:color .5s, text-shadow .5s;
+    }
+    #timer.warn {
+      color:var(--warning);
+      text-shadow:0 0 10px rgba(255,170,0,.7), 0 0 35px rgba(255,170,0,.3);
+      animation:blink 1s ease-in-out infinite;
+    }
+    #timer.crit {
+      color:var(--danger); text-shadow:var(--glow-d);
+      animation:blink .5s ease-in-out infinite;
+    }
+    .timer-lbl {
+      font-size:.52rem; letter-spacing:.6em;
+      color:var(--text-dim); text-align:center;
+      margin-top:.4rem; margin-bottom:2.4rem;
+    }
+
+    /* ── 6-char code inputs ── */
+    .code-row { display:flex; gap:.5rem; justify-content:center; margin-bottom:1.1rem; }
+    .cbox {
+      width:54px; height:66px;
+      background:var(--panel); border:1px solid var(--border);
+      color:var(--accent); font-family:var(--mono);
+      font-size:1.95rem; font-weight:700;
+      text-align:center; text-transform:uppercase;
+      outline:none; caret-color:transparent;
+      transition:border-color .18s, box-shadow .18s;
+    }
+    .cbox:focus { border-color:var(--accent); box-shadow:0 0 14px rgba(0,255,200,.22); }
+    .cbox.ok  { border-color:var(--success); box-shadow:0 0 14px rgba(0,255,136,.3); }
+    .cbox.err { border-color:var(--danger);  box-shadow:0 0 14px rgba(255,48,64,.3);  }
+
+    /* ── button ── */
+    .btn {
+      background:transparent; border:1px solid var(--accent);
+      color:var(--accent); font-family:var(--mono);
+      font-size:.68rem; letter-spacing:.35em;
+      padding:.7rem 2rem; cursor:pointer;
+      text-transform:uppercase;
+      transition:background .2s, box-shadow .2s;
+      position:relative; overflow:hidden;
+    }
+    .btn::after {
+      content:''; position:absolute; inset:0;
+      background:linear-gradient(90deg,transparent,rgba(0,255,200,.1),transparent);
+      transform:translateX(-100%); transition:transform .4s;
+    }
+    .btn:hover::after  { transform:translateX(100%); }
+    .btn:hover { background:rgba(0,255,200,.07); box-shadow:0 0 18px rgba(0,255,200,.22); }
+    .btn:active{ background:rgba(0,255,200,.14); }
+
+    /* ── code message ── */
+    #code-msg {
+      height:1.15em; margin-top:.85rem;
+      font-size:.62rem; letter-spacing:.2em; text-align:center;
+    }
+    #code-msg.err  { color:var(--danger);  }
+    #code-msg.warn { color:var(--warning); }
+    #code-msg.ok   { color:var(--success); }
+
+    /* ── mastermind circles ── */
+    .mm-circles {
+      display:flex; gap:1.1rem; justify-content:center;
+      flex-wrap:wrap; margin-bottom:2.2rem;
+    }
+    .mm-slot { display:flex; flex-direction:column; align-items:center; gap:.45rem; }
+    .mm-circle {
+      width:66px; height:66px; border-radius:50%;
+      cursor:pointer; border:3px solid transparent;
+      transition:transform .14s, box-shadow .14s;
+    }
+    .mm-circle:hover  { transform:scale(1.13); }
+    .mm-circle:active { transform:scale(.93);  }
+    .mm-lbl { font-size:.46rem; letter-spacing:.11em; text-align:center; }
+
+    /* ── mastermind history ── */
+    #mm-hist {
+      max-height:165px; overflow-y:auto;
+      margin-top:1.4rem; min-width:350px;
+    }
+    .hist-hdr { font-size:.5rem; letter-spacing:.35em; color:var(--text-dim); text-align:center; margin-bottom:.6rem; }
+    .hist-row { display:flex; align-items:center; gap:.55rem; margin-bottom:.45rem; justify-content:center; }
+    .hist-dot { width:17px; height:17px; border-radius:50%; flex-shrink:0; }
+    .hist-sep { width:1px; height:16px; background:var(--border); flex-shrink:0; }
+    .hist-res { font-size:.54rem; letter-spacing:.12em; }
+
+    /* ── validation terminal ── */
+    #screen-validation { padding:1.5rem 2rem 32px; }
+    .term-box {
+      width:100%; max-width:680px;
+      background:rgba(0,14,7,.94);
+      border:1px solid rgba(0,255,180,.18);
+      padding:1.6rem 1.8rem;
+      font-size:.8rem; line-height:1.9;
+      min-height:260px;
+      box-shadow:0 0 50px rgba(0,255,136,.06);
+      overflow-y:auto; max-height:55vh;
+    }
+    .tl { opacity:0; animation:fadeIn .07s forwards; white-space:pre; }
+    .t-p  { color:var(--text-mid); }
+    .t-o  { color:var(--text); }
+    .t-ok { color:var(--success); }
+    .t-er { color:var(--danger); }
+    .t-wa { color:var(--warning); }
+
+    /* ── evidence bar ── */
+    .evi-wrap  { width:100%; max-width:680px; margin-top:1.1rem; }
+    .evi-lbl   { font-size:.52rem; letter-spacing:.45em; color:var(--danger);
+                 text-shadow:var(--glow-d); margin-bottom:.38rem;
+                 animation:blink .8s ease-in-out infinite; }
+    .evi-track { height:7px; background:rgba(255,48,64,.12); border:1px solid rgba(255,48,64,.32); }
+    .evi-fill  { height:100%; background:var(--danger); box-shadow:0 0 8px var(--danger); }
+
+    /* ── unlocked screen ── */
+    .unlock-wrap  { text-align:center; }
+    .unlock-title {
+      font-size:clamp(1.8rem,5.5vw,3.4rem); letter-spacing:.4em;
+      color:var(--success); text-shadow:var(--glow-s);
+      animation:glitch 3.5s infinite; margin-bottom:1.4rem;
+    }
+    .unlock-sub { font-size:.68rem; letter-spacing:.35em; color:var(--text-mid); margin-bottom:1.3rem; }
+    .unlock-code {
+      font-size:clamp(3rem,10vw,5.5rem); letter-spacing:.5em; color:#fff;
+      text-shadow:0 0 28px rgba(255,255,255,.55);
+      animation:codeIn 1s ease-out forwards;
+    }
+
+    /* ── expired screen ── */
+    .exp-title {
+      font-size:clamp(2rem,6vw,4rem); letter-spacing:.35em;
+      color:var(--danger); text-shadow:var(--glow-d);
+      animation:blink 1s infinite;
+    }
+
+    /* ── overlays ── */
+    #flash {
+      position:fixed; inset:0; pointer-events:none; z-index:8000; opacity:0;
+    }
+    #flash.red   { background:rgba(255,40,40,.28);  animation:flashOut .5s forwards; }
+    #flash.green { background:rgba(0,255,136,.15);  animation:flashOut .5s forwards; }
+
+    #pfloat {
+      position:fixed; top:38%; left:50%; transform:translateX(-50%);
+      font-size:3.4rem; font-weight:700;
+      color:var(--danger); text-shadow:var(--glow-d);
+      pointer-events:none; opacity:0; z-index:7000; white-space:nowrap;
+    }
+    #pfloat.show { animation:floatUp 2s ease-out forwards; }
+
+    #pmsg {
+      position:fixed; top:calc(38% + 70px); left:50%; transform:translateX(-50%);
+      font-size:.64rem; letter-spacing:.25em;
+      color:var(--warning); pointer-events:none; opacity:0; z-index:7000; white-space:nowrap;
+      text-align:center;
+    }
+    #pmsg.show { animation:floatUp 2.2s ease-out forwards; }
+
+    /* ── keyframes ── */
+    @keyframes blink {
+      0%,100% { opacity:1; } 50% { opacity:.6; }
+    }
+    @keyframes fadeIn {
+      from { opacity:0; } to { opacity:1; }
+    }
+    @keyframes flashOut {
+      0% { opacity:1; } 100% { opacity:0; }
+    }
+    @keyframes floatUp {
+      0%   { opacity:1; transform:translateX(-50%) translateY(0); }
+      80%  { opacity:.8; }
+      100% { opacity:0; transform:translateX(-50%) translateY(-110px); }
+    }
+    @keyframes glitch {
+      0%,90%,100% { transform:none; filter:none; }
+      91%  { transform:translateX(-4px) skewX(2deg); filter:hue-rotate(30deg); }
+      93%  { transform:translateX(4px)  skewX(-2deg); filter:hue-rotate(-30deg); }
+      95%  { transform:translateX(-2px); filter:none; }
+    }
+    @keyframes codeIn {
+      0%   { opacity:0; transform:scale(1.25) translateY(8px); letter-spacing:.85em; }
+      100% { opacity:1; transform:scale(1) translateY(0); letter-spacing:.5em; }
+    }
+    @keyframes shake {
+      0%,100% { transform:translateX(0); }
+      15%  { transform:translateX(-9px) rotate(-.4deg); }
+      30%  { transform:translateX(9px)  rotate(.4deg);  }
+      50%  { transform:translateX(-6px); }
+      70%  { transform:translateX(6px);  }
+      85%  { transform:translateX(-3px); }
+    }
+    body.shake { animation:shake .45s ease-out; }
+
+    ::-webkit-scrollbar       { width:3px; }
+    ::-webkit-scrollbar-thumb { background:var(--border); }
+
+    /* ── host admin panel ── */
+    #host-overlay {
+      position:fixed; inset:0; z-index:9500;
+      background:rgba(0,0,0,.88);
+      display:none; align-items:center; justify-content:center;
+      backdrop-filter:blur(5px);
+    }
+    #host-overlay.open { display:flex; }
+    #host-modal {
+      background:#050f0a;
+      border:1px solid var(--accent);
+      box-shadow:0 0 50px rgba(0,255,200,.2), inset 0 0 40px rgba(0,255,200,.025);
+      padding:1.8rem 2.2rem;
+      max-width:700px; width:94%;
+      max-height:88vh; overflow-y:auto;
+    }
+    .hp-title {
+      font-size:.72rem; letter-spacing:.5em;
+      color:var(--accent); text-shadow:var(--glow-a);
+      margin-bottom:1.5rem; text-align:center;
+      border-bottom:1px solid var(--border); padding-bottom:.8rem;
+    }
+    .hp-section { margin-bottom:1.4rem; }
+    .hp-section-lbl {
+      font-size:.52rem; letter-spacing:.4em;
+      color:var(--text-mid); margin-bottom:.6rem;
+    }
+    .hp-row { display:flex; align-items:center; gap:.7rem; flex-wrap:wrap; margin-bottom:.4rem; }
+    .hp-lbl { font-size:.56rem; letter-spacing:.14em; color:var(--text); min-width:180px; }
+    .hp-input {
+      background:rgba(0,255,180,.025);
+      border:1px solid var(--border);
+      color:var(--accent); font-family:var(--mono);
+      font-size:.72rem; padding:.38rem .65rem;
+      outline:none; width:130px; transition:border-color .25s;
+    }
+    .hp-input:focus { border-color:var(--accent); }
+    .hp-select {
+      background:#050f0a; border:1px solid var(--border);
+      color:var(--accent); font-family:var(--mono);
+      font-size:.62rem; padding:.3rem .45rem;
+      outline:none; cursor:pointer; transition:border-color .25s;
+    }
+    .hp-select:focus { border-color:var(--accent); }
+    .hp-btn {
+      background:transparent; border:1px solid var(--accent);
+      color:var(--accent); font-family:var(--mono);
+      font-size:.54rem; letter-spacing:.2em;
+      padding:.35rem .85rem; cursor:pointer;
+      transition:background .18s;
+    }
+    .hp-btn:hover { background:rgba(0,255,200,.08); }
+    .hp-btn.hp-warn { border-color:var(--warning); color:var(--warning); }
+    .hp-btn.hp-warn:hover { background:rgba(255,170,0,.08); }
+    .hp-code-row {
+      display:flex; align-items:center; gap:.65rem;
+      padding:.3rem .1rem;
+      border-bottom:1px solid rgba(0,255,180,.06);
+    }
+    .hp-code-val { font-size:.68rem; letter-spacing:.2em; color:var(--accent); min-width:88px; }
+    .hp-code-badge {
+      font-size:.5rem; letter-spacing:.16em;
+      min-width:106px; padding:.2rem .45rem; border:1px solid;
+    }
+    .hp-code-badge.used   { color:var(--danger);  border-color:rgba(255,48,64,.35);  background:rgba(255,48,64,.07);  }
+    .hp-code-badge.unused { color:var(--success); border-color:rgba(0,255,136,.35); background:rgba(0,255,136,.07); }
+    .hp-footer {
+      display:flex; justify-content:space-between; align-items:center;
+      margin-top:1.4rem; border-top:1px solid var(--border); padding-top:.9rem;
+    }
+    .hp-notice { font-size:.48rem; letter-spacing:.22em; color:var(--text-dim); }
+  </style>
+</head>
+<body>
+
+<canvas id="stars"></canvas>
+
+<!-- corner brackets -->
+<div class="crn crn-tl"></div>
+<div class="crn crn-tr"></div>
+<div class="crn crn-bl"></div>
+<div class="crn crn-br"></div>
+
+<!-- overlays -->
+<div id="flash"></div>
+<div id="pfloat"></div>
+<div id="pmsg"></div>
+
+<!-- status bar -->
+<div id="sbar">
+  <div class="si">TIME: <b id="sb-time">--:--</b></div>
+  <div class="si">CODES ACCEPTED: <b id="sb-codes">0</b></div>
+  <div class="si">MM ATTEMPTS: <b id="sb-att">0</b></div>
+  <div class="si">ENCRYPTION: <b>AES-256 / QUANTUM</b></div>
+</div>
+
+
+<!-- ════════════════════════════════════════
+     SCREEN 1 — MAIN COUNTDOWN + CODE ENTRY
+     ════════════════════════════════════════ -->
+<div id="screen-main" class="screen">
+  <div class="page-title">NEXUS BREACH PROTOCOL</div>
+  <div class="page-sub">◈ SYSTEM LOCKDOWN ACTIVE ◈</div>
+
+  <div id="timer">--:--</div>
+  <div class="timer-lbl">◈ TIME REMAINING ◈</div>
+
+  <div class="section-lbl">// ENTER ACCESS CODE</div>
+  <div class="code-row" id="code-row"></div>
+  <button class="btn" id="btn-code">[ SUBMIT CODE ]</button>
+  <div id="code-msg"></div>
+</div>
+
+
+<!-- ════════════════════════════════════
+     SCREEN 2 — MASTERMIND COLOR PICKER
+     ════════════════════════════════════ -->
+<div id="screen-mm" class="screen">
+  <div class="page-title">DECRYPTION SEQUENCE</div>
+  <div class="page-sub">◈ ACCESS CODE ACCEPTED — ENTER DECRYPTION KEY ◈</div>
+
+  <div class="section-lbl">// SELECT COLOR SEQUENCE — CLICK TO CYCLE</div>
+  <div class="mm-circles" id="mm-circles"></div>
+  <button class="btn" id="btn-mm">[ SUBMIT SEQUENCE ]</button>
+  <div id="mm-hist"></div>
+</div>
+
+
+<!-- ════════════════════════════════
+     SCREEN 3 — VALIDATION OUTPUT
+     ════════════════════════════════ -->
+<div id="screen-validation" class="screen">
+  <div class="term-box" id="terminal"></div>
+  <div class="evi-wrap" id="evi-wrap" style="display:none">
+    <div class="evi-lbl">⚠ DESTROYING EVIDENCE ⚠</div>
+    <div class="evi-track"><div class="evi-fill" id="evi-fill"></div></div>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════
+     SCREEN 4 — DEVICE UNLOCKED
+     ════════════════════════════ -->
+<div id="screen-unlocked" class="screen">
+  <div class="unlock-wrap">
+    <div class="unlock-title">DEVICE UNLOCKED</div>
+    <div class="unlock-sub">ENTER USING FOLLOWING CODE:</div>
+    <div class="unlock-code" id="unlock-code"></div>
+  </div>
+</div>
+
+
+<!-- ════════════════════════
+     SCREEN 5 — TIME EXPIRED
+     ════════════════════════ -->
+<div id="screen-expired" class="screen">
+  <div class="exp-title">TIME EXPIRED</div>
+  <div class="page-sub" style="margin-top:1rem">◈ SYSTEM LOCKDOWN COMPLETE ◈</div>
+</div>
+
+
+<!-- ════════════════════════════════════════
+     HOST ADMIN PANEL  (Alt+H to toggle)
+     ════════════════════════════════════════ -->
+<div id="host-overlay">
+  <div id="host-modal">
+    <div class="hp-title">&#9881;  HOST ADMIN PANEL</div>
+
+    <div class="hp-section">
+      <div class="hp-section-lbl">// TIMER</div>
+      <div class="hp-row">
+        <span class="hp-lbl">REMAINING TIME (MM:SS)</span>
+        <input class="hp-input" id="hp-timer" type="text" placeholder="90:00" autocomplete="off" spellcheck="false">
+        <button class="hp-btn" id="hp-timer-btn">[ SET ]</button>
+      </div>
+    </div>
+
+    <div class="hp-section">
+      <div class="hp-section-lbl">// UNLOCK CODE</div>
+      <div class="hp-row">
+        <span class="hp-lbl">UNLOCK CODE</span>
+        <input class="hp-input" id="hp-unlock" type="text" autocomplete="off" spellcheck="false">
+        <button class="hp-btn" id="hp-unlock-btn">[ SET ]</button>
+      </div>
+    </div>
+
+    <div class="hp-section">
+      <div class="hp-section-lbl">// MASTERMIND SOLUTION</div>
+      <div class="hp-row">
+        <select class="hp-select" id="hp-mm-0"></select>
+        <select class="hp-select" id="hp-mm-1"></select>
+        <select class="hp-select" id="hp-mm-2"></select>
+        <select class="hp-select" id="hp-mm-3"></select>
+        <select class="hp-select" id="hp-mm-4"></select>
+        <button class="hp-btn" id="hp-mm-btn">[ SET ]</button>
+      </div>
+    </div>
+
+    <div class="hp-section">
+      <div class="hp-section-lbl">// ACCESS CODES</div>
+      <div id="hp-codes-list"></div>
+      <div class="hp-row" style="margin-top:.85rem">
+        <span class="hp-lbl">NEW CODE (up to 6 chars)</span>
+        <input class="hp-input" id="hp-new-code" type="text" maxlength="6" placeholder="e.g. KAPPA1" autocomplete="off" spellcheck="false">
+        <button class="hp-btn" id="hp-add-code-btn">[ ADD ]</button>
+      </div>
+      <div class="hp-row" style="margin-top:.4rem">
+        <button class="hp-btn hp-warn" id="hp-reset-all-btn">[ REACTIVATE ALL ]</button>
+      </div>
+    </div>
+
+    <div class="hp-footer">
+      <span class="hp-notice">ALT+H · CHANGES APPLY IMMEDIATELY</span>
+      <button class="hp-btn" id="hp-close-btn">[ CLOSE ]</button>
+    </div>
+  </div>
+</div>
+
+
+<script>
+/* ═══════════════════════════════════════════════════════════════
+   ██████  C O N F I G U R A T I O N  —  EDIT THIS SECTION  ██████
+   ═══════════════════════════════════════════════════════════════ */
+const CONFIG = {
+
+  /* ── Timer ── */
+  countdownDuration: 90 * 60,     // seconds  (default: 90 min)
+  penaltySeconds:    10,          // subtracted when a code is reused
+  invalidCodePenalty: 5,          // subtracted when an invalid code is entered
+
+  /* ── Evidence destruction bar ── */
+  evidenceSeconds: 10,            // seconds before returning to main screen
+
+  /* ── Code shown when mastermind is solved ── */
+  unlockCode: "7734",
+
+  /* ── Mastermind solution ──
+     5 entries, each from: SOLAR  NEBULA  AURORA  PLASMA  COMET  PULSAR   */
+  mastermindSolution: ["SOLAR", "NEBULA", "AURORA", "PLASMA", "COMET"],
+
+  /* ── Valid 6-character access codes (case-insensitive, spaces trimmed) ── */
+  accessCodes: [
+    "ALPHA1",
+    "BETA23",
+    "GAMMA4",
+    "DELTA5",
+    "SIGMA6",
+    "OMEGA7",
+    "ZETA89",
+    "THETA0",
+  ],
+
+};
+/* ═══════════════════════════════════════════════════════════════
+   END OF CONFIGURATION
+   ═══════════════════════════════════════════════════════════════ */
+
+
+/* ── color palette ── */
+const COLORS = [
+  { key:"SOLAR",  hex:"#FFD700", glow:"rgba(255,215,  0,.50)" },
+  { key:"NEBULA", hex:"#C084FC", glow:"rgba(192,132,252,.50)" },
+  { key:"AURORA", hex:"#22D3EE", glow:"rgba( 34,211,238,.50)" },
+  { key:"PLASMA", hex:"#FB923C", glow:"rgba(251,146, 60,.50)" },
+  { key:"COMET",  hex:"#34D399", glow:"rgba( 52,211,153,.50)" },
+  { key:"PULSAR", hex:"#F472B6", glow:"rgba(244,114,182,.50)" },
+];
+
+/* ── runtime state ── */
+const S = {
+  time:         CONFIG.countdownDuration,
+  usedCodes:    new Set(),
+  codesAccepted:0,
+  mmAttempts:   0,
+  mmHistory:    [],       // [{guess:[colorIdx,...], res:{exact,color}}]
+  mmSolved:     false,
+  guess:        [0,0,0,0,0],
+  timerStarted: false,
+  tickId:       null,
+};
+
+/* ── tiny utilities ── */
+const $ = id => document.getElementById(id);
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+function fmtTime(s) {
+  if (s < 0) s = 0;
+  return `${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`;
+}
+
+
+/* ════════════════════════════════════════════════════════
+   STARFIELD
+   ════════════════════════════════════════════════════════ */
+(function initStars() {
+  const cv = $('stars'), ctx = cv.getContext('2d');
+  let stars = [];
+
+  function resize() {
+    cv.width  = innerWidth;
+    cv.height = innerHeight;
+    stars = Array.from({length:240}, () => ({
+      x:  Math.random() * cv.width,
+      y:  Math.random() * cv.height,
+      r:  Math.random() * 1.3 + 0.2,
+      op: Math.random(),
+      tw: Math.random() * Math.PI * 2,
+      sp: Math.random() * 0.22 + 0.04,
+    }));
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, cv.width, cv.height);
+
+    // soft nebula clouds
+    [
+      [.18, .28, 'rgba(0,80,150,.08)'],
+      [.80, .66, 'rgba(80,0,120,.07)'],
+      [.50, .50, 'rgba(0,55,80,.05)'],
+    ].forEach(([rx,ry,col]) => {
+      const g = ctx.createRadialGradient(
+        cv.width*rx, cv.height*ry, 0,
+        cv.width*rx, cv.height*ry, cv.width*.38
+      );
+      g.addColorStop(0, col);
+      g.addColorStop(1, 'transparent');
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, cv.width, cv.height);
+    });
+
+    const now = Date.now() / 1000;
+    for (const s of stars) {
+      s.y += s.sp * 0.07;
+      if (s.y > cv.height) { s.y = 0; s.x = Math.random() * cv.width; }
+      const a = s.op * (.35 + .65 * Math.sin(now * 1.4 + s.tw));
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(200,220,255,${a})`;
+      ctx.fill();
+    }
+  }
+
+  resize();
+  addEventListener('resize', resize);
+  setInterval(draw, 40);
+})();
+
+
+/* ════════════════════════════════════════════════════════
+   TIMER
+   ════════════════════════════════════════════════════════ */
+function startTimer() {
+  if (S.timerStarted) return;
+  S.timerStarted = true;
+  S.tickId = setInterval(() => {
+    if (S.mmSolved) return;
+    S.time = Math.max(0, S.time - 1);
+    refreshTimerEl();
+    if (S.time === 0) {
+      clearInterval(S.tickId);
+      showScreen('expired');
+    }
+  }, 1000);
+}
+
+function refreshTimerEl() {
+  const el = $('timer');
+  el.textContent = fmtTime(S.time);
+  el.className   = S.time <= 60 ? 'crit' : S.time <= 300 ? 'warn' : '';
+  $('sb-time').textContent = fmtTime(S.time);
+}
+
+
+/* ════════════════════════════════════════════════════════
+   CODE INPUTS
+   ════════════════════════════════════════════════════════ */
+function buildCodeInputs() {
+  const row = $('code-row');
+  row.innerHTML = '';
+  for (let i = 0; i < 6; i++) {
+    const inp = document.createElement('input');
+    inp.type        = 'text';
+    inp.maxLength   = 1;
+    inp.className   = 'cbox';
+    inp.id          = `ci${i}`;
+    inp.autocomplete = 'off';
+    inp.spellcheck  = false;
+
+    inp.addEventListener('keydown', e => {
+      if (e.key === 'Backspace' && !inp.value && i > 0) {
+        const p = $(`ci${i-1}`);
+        p.value = '';
+        p.focus();
+      } else if (e.key === 'Enter') {
+        submitCode();
+      }
+    });
+
+    inp.addEventListener('input', () => {
+      let v = inp.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+      inp.value = v ? v.slice(-1) : '';
+      if (inp.value) {
+        const next = $(`ci${i+1}`);
+        if (next) next.focus();
+      }
+    });
+
+    inp.addEventListener('focus', () => inp.select());
+    row.appendChild(inp);
+  }
+}
+
+function getCode() {
+  return Array.from({length:6}, (_,i) => ($(`ci${i}`)?.value || '').toUpperCase()).join('');
+}
+
+function clearCodeInputs() {
+  for (let i = 0; i < 6; i++) {
+    const el = $(`ci${i}`);
+    if (el) { el.value = ''; el.className = 'cbox'; }
+  }
+  setTimeout(() => $('ci0')?.focus(), 50);
+}
+
+function animCodeBoxes(cls) {
+  for (let i = 0; i < 6; i++) $(`ci${i}`)?.classList.add(cls);
+}
+
+function clearCodeClass() {
+  for (let i = 0; i < 6; i++) {
+    $(`ci${i}`)?.classList.remove('ok', 'err');
+  }
+}
+
+function setMsg(text, cls) {
+  const el = $('code-msg');
+  el.textContent = text;
+  el.className   = cls;
+  clearTimeout(el._t);
+  el._t = setTimeout(() => { el.textContent = ''; el.className = ''; }, 3500);
+}
+
+
+/* ════════════════════════════════════════════════════════
+   CODE SUBMISSION
+   ════════════════════════════════════════════════════════ */
+function submitCode() {
+  const code = getCode();
+
+  if (code.length < 6) {
+    triggerError();
+    setMsg('INCOMPLETE — ENTER ALL 6 CHARACTERS', 'err');
+    return;
+  }
+
+  const validList = CONFIG.accessCodes.map(c => c.trim().toUpperCase());
+
+  if (!validList.includes(code)) {
+    S.time = Math.max(0, S.time - CONFIG.invalidCodePenalty);
+    refreshTimerEl();
+    triggerError();
+    showPenaltyFloat(CONFIG.invalidCodePenalty, 'INVALID ACCESS CODE — PENALTY APPLIED');
+    setMsg(`⚠  INVALID ACCESS CODE — PENALTY: -${CONFIG.invalidCodePenalty}s`, 'err');
+    clearCodeInputs();
+    return;
+  }
+
+  if (S.usedCodes.has(code)) {
+    // penalty
+    S.time = Math.max(0, S.time - CONFIG.penaltySeconds);
+    refreshTimerEl();
+    triggerError();
+    showPenaltyFloat(CONFIG.penaltySeconds, 'CODE ALREADY CONSUMED — PENALTY APPLIED');
+    setMsg(`⚠  CODE ALREADY CONSUMED — PENALTY: -${CONFIG.penaltySeconds}s`, 'warn');
+    clearCodeInputs();
+    return;
+  }
+
+  // ── valid & unused ──
+  S.usedCodes.add(code);
+  S.codesAccepted++;
+  $('sb-codes').textContent = S.codesAccepted;
+  animCodeBoxes('ok');
+  flash('green');
+  setMsg('✓  ACCESS CODE ACCEPTED', 'ok');
+
+  setTimeout(() => {
+    clearCodeClass();
+    clearCodeInputs();
+    showScreen('mm');
+    resetMM();
+  }, 800);
+}
+
+function triggerError() {
+  animCodeBoxes('err');
+  flash('red');
+  document.body.classList.add('shake');
+  setTimeout(() => {
+    clearCodeClass();
+    document.body.classList.remove('shake');
+  }, 500);
+}
+
+function flash(col) {
+  const el = $('flash');
+  el.className = '';
+  void el.offsetWidth;          // reflow
+  el.className = col;
+  setTimeout(() => el.className = '', 600);
+}
+
+function showPenaltyFloat(seconds, message) {
+  const pf = $('pfloat'), pm = $('pmsg');
+
+  pf.textContent = `-${seconds}s`;
+  pf.className   = '';
+  void pf.offsetWidth;
+  pf.classList.add('show');
+
+  pm.textContent = message;
+  pm.className   = '';
+  void pm.offsetWidth;
+  pm.classList.add('show');
+
+  setTimeout(() => { pf.className = ''; pm.className = ''; }, 2300);
+}
+
+
+/* ════════════════════════════════════════════════════════
+   SCREEN MANAGEMENT
+   ════════════════════════════════════════════════════════ */
+function showScreen(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  $(`screen-${name}`)?.classList.add('active');
+  if (name === 'main') {
+    startTimer();
+    setTimeout(() => $('ci0')?.focus(), 100);
+  }
+}
+
+
+/* ════════════════════════════════════════════════════════
+   MASTERMIND
+   ════════════════════════════════════════════════════════ */
+function resetMM() {
+  S.guess = [0, 0, 0, 0, 0];
+  renderCircles();
+  renderHistory();
+}
+
+function renderCircles() {
+  const wrap = $('mm-circles');
+  wrap.innerHTML = '';
+  S.guess.forEach((ci, i) => {
+    const col = COLORS[ci];
+    const slot = document.createElement('div');
+    slot.className = 'mm-slot';
+
+    const circle = document.createElement('div');
+    circle.className = 'mm-circle';
+    circle.style.cssText =
+      `background:${col.hex};` +
+      `box-shadow:0 0 18px ${col.glow},0 0 40px ${col.glow},inset 0 0 10px rgba(255,255,255,.18);` +
+      `border-color:${col.hex};`;
+    circle.title = `${col.key} — click to change`;
+    circle.addEventListener('click', () => {
+      S.guess[i] = (S.guess[i] + 1) % COLORS.length;
+      renderCircles();
+    });
+
+    const lbl = document.createElement('div');
+    lbl.className  = 'mm-lbl';
+    lbl.style.color = col.hex;
+    lbl.textContent = col.key;
+
+    slot.append(circle, lbl);
+    wrap.appendChild(slot);
+  });
+}
+
+function renderHistory() {
+  const wrap = $('mm-hist');
+  wrap.innerHTML = '';
+  if (!S.mmHistory.length) return;
+
+  const hdr = document.createElement('div');
+  hdr.className   = 'hist-hdr';
+  hdr.textContent = '// PREVIOUS ATTEMPTS';
+  wrap.appendChild(hdr);
+
+  S.mmHistory.forEach(({guess, res}) => {
+    const row = document.createElement('div');
+    row.className = 'hist-row';
+
+    guess.forEach(ci => {
+      const d = document.createElement('div');
+      d.className     = 'hist-dot';
+      const c         = COLORS[ci];
+      d.style.cssText = `background:${c.hex};box-shadow:0 0 5px ${c.glow};`;
+      row.appendChild(d);
+    });
+
+    const sep = document.createElement('div');
+    sep.className = 'hist-sep';
+    row.appendChild(sep);
+
+    const ri = document.createElement('div');
+    ri.className = 'hist-res';
+    ri.innerHTML =
+      `<span style="color:var(--success)" title="Exact position + color">&#9679;${res.exact}</span>` +
+      `&nbsp;` +
+      `<span style="color:var(--warning)" title="Correct color, wrong position">&#9680;${res.color}</span>`;
+    row.appendChild(ri);
+    wrap.appendChild(row);
+  });
+}
+
+function checkMM(guessIndices, solution) {
+  let exact = 0, color = 0;
+  const gLeft = [], sLeft = [];
+
+  for (let i = 0; i < 5; i++) {
+    if (COLORS[guessIndices[i]].key === solution[i]) {
+      exact++;
+    } else {
+      gLeft.push(COLORS[guessIndices[i]].key);
+      sLeft.push(solution[i]);
+    }
+  }
+  for (const k of gLeft) {
+    const idx = sLeft.indexOf(k);
+    if (idx !== -1) { color++; sLeft.splice(idx, 1); }
+  }
+  return { exact, color };
+}
+
+function submitMM() {
+  const res = checkMM(S.guess, CONFIG.mastermindSolution);
+  S.mmAttempts++;
+  $('sb-att').textContent = S.mmAttempts;
+  S.mmHistory.push({ guess: [...S.guess], res });
+  showScreen('validation');
+  runValidation([...S.guess], res);
+}
+
+
+/* ════════════════════════════════════════════════════════
+   VALIDATION TERMINAL
+   ════════════════════════════════════════════════════════ */
+async function runValidation(guessIdx, res) {
+  const term = $('terminal');
+  term.innerHTML = '';
+  $('evi-wrap').style.display = 'none';
+
+  const isWin      = res.exact === 5;
+  const guessNames = guessIdx.map(i => COLORS[i].key);
+
+  // ── hit bars ──
+  const hitBar = n => '█'.repeat(n) + '░'.repeat(5 - n);
+
+  // ── terminal lines: [delayMs, cssClass, text] ──
+  const lines = [
+    [    0, 't-p', '> INITIALIZING SEQUENCE VALIDATOR...'],
+    [  380, 't-p', '> LOADING QUANTUM ENCRYPTION MATRIX...'],
+    [  790, 't-p', '> CROSS-REFERENCING NEURAL HASH TABLE...'],
+    [ 1080, 't-o', ''],
+    [ 1130, 't-o', `  SUBMITTED:  [ ${guessNames.join(' | ')} ]`],
+    [ 1280, 't-o', ''],
+    [ 1380, 't-p', '> ANALYZING INPUT SEQUENCE...'],
+    [ 1680, 't-o', '  [' + '█'.repeat(32) + '] 100%'],
+    [ 1900, 't-o', ''],
+    [ 1960, 't-p', '> ANALYSIS COMPLETE'],
+    [ 2050, 't-o', '  ' + '─'.repeat(44)],
+    [ 2200, isWin ? 't-ok' : 't-o',  `  EXACT_HIT  >>>  ${hitBar(res.exact)}   ${res.exact} / 5`],
+    [ 2360, res.color > 0 ? 't-wa' : 't-o', `  COLOR_HIT  >>>  ${hitBar(res.color)}   ${res.color} / 5`],
+    [ 2460, 't-o', '  ' + '─'.repeat(44)],
+    [ 2560, isWin ? 't-ok' : 't-er', `  STATUS     :   ${isWin ? 'DECRYPTION SUCCESSFUL ✓' : 'PARTIAL / NO MATCH    ✗'}`],
+    [ 2660, 't-o', '  ' + '─'.repeat(44)],
+  ];
+
+  if (isWin) {
+    lines.push(
+      [ 2950, 't-o',  ''],
+      [ 3050, 't-ok', '> DECRYPTION KEY ACCEPTED'],
+      [ 3450, 't-ok', '> UNLOCKING DEVICE...'],
+      [ 3850, 't-ok', '> TRANSFERRING SECURE ACCESS CODE...'],
+      [ 4200, 't-ok', `> UNLOCK CODE: ${CONFIG.unlockCode}`],
+    );
+  }
+
+  // schedule all lines as absolute timeouts
+  for (const [delay, cls, text] of lines) {
+    setTimeout(() => addLine(term, text, cls), delay);
+  }
+
+  const lastDelay = lines[lines.length - 1][0];
+  await sleep(lastDelay + 450);
+
+  if (isWin) {
+    await sleep(600);
+    S.mmSolved = true;
+    $('unlock-code').textContent = CONFIG.unlockCode;
+    showScreen('unlocked');
+  } else {
+    await sleep(250);
+    startEviBar(() => showScreen('main'));
+  }
+}
+
+function addLine(term, text, cls) {
+  const d = document.createElement('div');
+  d.className   = 'tl ' + (cls || 't-o');
+  d.textContent = text || '\u00A0';
+  term.appendChild(d);
+  term.scrollTop = term.scrollHeight;
+}
+
+
+/* ════════════════════════════════════════════════════════
+   EVIDENCE DESTRUCTION BAR
+   ════════════════════════════════════════════════════════ */
+function startEviBar(callback) {
+  const wrap  = $('evi-wrap');
+  const fill  = $('evi-fill');
+  wrap.style.display = 'block';
+
+  const dur = CONFIG.evidenceSeconds * 1000;
+  const t0  = Date.now();
+
+  (function tick() {
+    const frac = Math.max(0, 1 - (Date.now() - t0) / dur);
+    fill.style.width = (frac * 100) + '%';
+    if (frac > 0) {
+      requestAnimationFrame(tick);
+    } else {
+      wrap.style.display = 'none';
+      callback();
+    }
+  })();
+}
+
+
+/* ════════════════════════════════════════════════════════
+   HOST ADMIN PANEL  (Alt + H)
+   ════════════════════════════════════════════════════════ */
+function buildMMSelects() {
+  const opts = COLORS.map(c => `<option value="${c.key}">${c.key}</option>`).join('');
+  for (let i = 0; i < 5; i++) $(`hp-mm-${i}`).innerHTML = opts;
+}
+
+function openHostPanel() {
+  $('hp-timer').value  = fmtTime(S.time);
+  $('hp-unlock').value = CONFIG.unlockCode;
+  CONFIG.mastermindSolution.forEach((key, i) => { $(`hp-mm-${i}`).value = key; });
+
+  const list = $('hp-codes-list');
+  list.innerHTML = '';
+  CONFIG.accessCodes.forEach(raw => {
+    const code = raw.trim().toUpperCase();
+    const used = S.usedCodes.has(code);
+    const row  = document.createElement('div');
+    row.className = 'hp-code-row';
+    row.id        = `hp-row-${code}`;
+    row.innerHTML =
+      `<span class="hp-code-val">${code}</span>` +
+      `<span class="hp-code-badge ${used ? 'used' : 'unused'}" id="hp-cb-${code}">` +
+        `${used ? '\u25CF CONSUMED' : '\u25CB AVAILABLE'}` +
+      `</span>` +
+      `<button class="hp-btn${used ? '' : ' hp-warn'}" id="hp-ct-${code}">` +
+        `${used ? '[ REACTIVATE ]' : '[ CONSUME ]'}` +
+      `</button>` +
+      `<button class="hp-btn" style="border-color:var(--danger);color:var(--danger)" id="hp-del-${code}">[ REMOVE ]</button>`;
+    row.querySelector(`#hp-ct-${code}`).addEventListener('click',  () => toggleCode(code));
+    row.querySelector(`#hp-del-${code}`).addEventListener('click', () => removeCode(code));
+    list.appendChild(row);
+  });
+
+  $('host-overlay').classList.add('open');
+}
+
+function closeHostPanel() {
+  $('host-overlay').classList.remove('open');
+}
+
+function hpFlash(el) {
+  el.style.borderColor = 'var(--success)';
+  setTimeout(() => el.style.borderColor = '', 1200);
+}
+
+function applyTimer() {
+  const raw  = $('hp-timer').value.trim();
+  const mmss = raw.match(/^(\d+):(\d{2})$/);
+  let secs;
+  if (mmss)            secs = parseInt(mmss[1]) * 60 + parseInt(mmss[2]);
+  else if (/^\d+$/.test(raw)) secs = parseInt(raw);
+  else { $('hp-timer').style.borderColor = 'var(--danger)'; setTimeout(() => $('hp-timer').style.borderColor = '', 1200); return; }
+  S.time = Math.max(0, secs);
+  refreshTimerEl();
+  $('hp-timer').value = fmtTime(S.time);
+  hpFlash($('hp-timer'));
+}
+
+function applyUnlockCode() {
+  const val = $('hp-unlock').value.trim();
+  if (!val) return;
+  CONFIG.unlockCode = val;
+  $('unlock-code').textContent = val;
+  hpFlash($('hp-unlock'));
+}
+
+function applyMMSolution() {
+  CONFIG.mastermindSolution = Array.from({length:5}, (_,i) => $(`hp-mm-${i}`).value);
+  for (let i = 0; i < 5; i++) hpFlash($(`hp-mm-${i}`));
+}
+
+function toggleCode(code) {
+  const badge = $(`hp-cb-${code}`);
+  const btn   = $(`hp-ct-${code}`);
+  if (S.usedCodes.has(code)) {
+    S.usedCodes.delete(code);
+    S.codesAccepted = Math.max(0, S.codesAccepted - 1);
+    $('sb-codes').textContent = S.codesAccepted;
+    badge.textContent = '\u25CB AVAILABLE';
+    badge.className   = 'hp-code-badge unused';
+    btn.textContent   = '[ CONSUME ]';
+    btn.className     = 'hp-btn hp-warn';
+  } else {
+    S.usedCodes.add(code);
+    S.codesAccepted++;
+    $('sb-codes').textContent = S.codesAccepted;
+    badge.textContent = '\u25CF CONSUMED';
+    badge.className   = 'hp-code-badge used';
+    btn.textContent   = '[ REACTIVATE ]';
+    btn.className     = 'hp-btn';
+  }
+}
+
+function reactivateAllCodes() {
+  CONFIG.accessCodes.forEach(raw => {
+    const code = raw.trim().toUpperCase();
+    S.usedCodes.delete(code);
+    const badge = $(`hp-cb-${code}`);
+    const btn   = $(`hp-ct-${code}`);
+    if (badge) { badge.textContent = '\u25CB AVAILABLE'; badge.className = 'hp-code-badge unused'; }
+    if (btn)   { btn.textContent   = '[ CONSUME ]';      btn.className   = 'hp-btn hp-warn'; }
+  });
+  S.codesAccepted = 0;
+  $('sb-codes').textContent = 0;
+}
+
+function addCodeRow(code) {
+  const list = $('hp-codes-list');
+  const row  = document.createElement('div');
+  row.className = 'hp-code-row';
+  row.id        = `hp-row-${code}`;
+  row.innerHTML =
+    `<span class="hp-code-val">${code}</span>` +
+    `<span class="hp-code-badge unused" id="hp-cb-${code}">\u25CB AVAILABLE</span>` +
+    `<button class="hp-btn hp-warn" id="hp-ct-${code}">[ CONSUME ]</button>` +
+    `<button class="hp-btn" style="border-color:var(--danger);color:var(--danger)" id="hp-del-${code}">[ REMOVE ]</button>`;
+  row.querySelector(`#hp-ct-${code}`).addEventListener('click',  () => toggleCode(code));
+  row.querySelector(`#hp-del-${code}`).addEventListener('click', () => removeCode(code));
+  list.appendChild(row);
+}
+
+function applyAddCode() {
+  const inp  = $('hp-new-code');
+  const code = inp.value.trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
+  if (!code) { inp.style.borderColor = 'var(--danger)'; setTimeout(() => inp.style.borderColor = '', 1200); return; }
+  if (CONFIG.accessCodes.map(c => c.trim().toUpperCase()).includes(code)) {
+    inp.style.borderColor = 'var(--warning)';
+    setTimeout(() => inp.style.borderColor = '', 1200);
+    return;
+  }
+  CONFIG.accessCodes.push(code);
+  addCodeRow(code);
+  inp.value = '';
+  hpFlash(inp);
+}
+
+function removeCode(code) {
+  CONFIG.accessCodes = CONFIG.accessCodes.filter(c => c.trim().toUpperCase() !== code);
+  S.usedCodes.delete(code);
+  const row = $(`hp-row-${code}`);
+  if (row) row.remove();
+}
+
+
+/* ════════════════════════════════════════════════════════
+   INIT
+   ════════════════════════════════════════════════════════ */
+function init() {
+  // set initial timer display
+  $('timer').textContent = fmtTime(CONFIG.countdownDuration);
+  $('sb-time').textContent = fmtTime(CONFIG.countdownDuration);
+
+  buildCodeInputs();
+  renderHistory();
+
+  $('btn-code').addEventListener('click', submitCode);
+  $('btn-mm').addEventListener('click', submitMM);
+
+  // host admin panel
+  buildMMSelects();
+  $('hp-timer-btn').addEventListener('click', applyTimer);
+  $('hp-unlock-btn').addEventListener('click', applyUnlockCode);
+  $('hp-mm-btn').addEventListener('click', applyMMSolution);
+  $('hp-close-btn').addEventListener('click', closeHostPanel);
+  $('hp-reset-all-btn').addEventListener('click', reactivateAllCodes);
+  $('hp-add-code-btn').addEventListener('click', applyAddCode);
+  $('hp-new-code').addEventListener('keydown', e => { if (e.key === 'Enter') applyAddCode(); });
+  document.addEventListener('keydown', e => {
+    if (e.altKey && !e.ctrlKey && !e.metaKey && e.key.toLowerCase() === 'h') {
+      e.preventDefault();
+      $('host-overlay').classList.contains('open') ? closeHostPanel() : openHostPanel();
+    }
+    if (e.key === 'Escape' && $('host-overlay').classList.contains('open')) {
+      closeHostPanel();
+    }
+  });
+
+  showScreen('main');
+}
+
+init();
+</script>
+</body>
+</html>

@@ -1,0 +1,14 @@
+title: Mastermind
+description: Raad de geheime kleurencode van 4 kleuren!
+details: |
+  Eén speler (de codemaker) verzint in het geheim een code van 4 kleuren.
+  Gebruik de kleuren: rood, blauw, groen, geel, wit, zwart.
+  Kleuren mogen herhaald worden in de code.
+
+  De rest probeert de code te raden in maximaal 10 beurten.
+  Na elke poging geeft de codemaker aanwijzingen:
+  - ZWARTE STEEN = juiste kleur op de juiste positie
+  - WITTE STEEN  = juiste kleur maar op de verkeerde positie
+
+  Wie de code raadt voor de beurten op zijn, wint!
+  Tip voor de begeleider: gebruik gekleurde steentjes of schrijf de code op papier.

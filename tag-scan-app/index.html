@@ -1,0 +1,1029 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#070710">
+  <title>AJOK · TAG SCANNER</title>
+  <style>
+    :root {
+      --bg:       #070710;
+      --panel:    rgba(0,255,180,.025);
+      --border:   rgba(0,255,180,.14);
+      --accent:   #00ffc8;
+      --danger:   #ff3040;
+      --warning:  #ffaa00;
+      --success:  #00ff88;
+      --text:     #c8ffe8;
+      --text-mid: #4a9a70;
+      --text-dim: #2a5a40;
+      --mono:     'Courier New', 'Lucida Console', monospace;
+      --glow-a:   0 0 10px rgba(0,255,200,.7), 0 0 35px rgba(0,255,200,.3);
+      --glow-d:   0 0 10px rgba(255,48,64,.7),  0 0 35px rgba(255,48,64,.3);
+      --glow-s:   0 0 10px rgba(0,255,136,.7),  0 0 35px rgba(0,255,136,.3);
+      --glow-w:   0 0 10px rgba(255,170,0,.7),  0 0 35px rgba(255,170,0,.3);
+    }
+
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+    html, body {
+      width:100%; height:100%; overflow:hidden;
+      background:var(--bg); color:var(--text);
+      font-family:var(--mono); user-select:none;
+      -webkit-tap-highlight-color:transparent;
+    }
+
+    /* scanlines */
+    body::before {
+      content:''; position:fixed; inset:0; pointer-events:none; z-index:9100;
+      background:repeating-linear-gradient(
+        to bottom, transparent 0, transparent 3px,
+        rgba(0,0,0,.04) 3px, rgba(0,0,0,.04) 4px
+      );
+    }
+
+    /* corner brackets */
+    .crn { position:fixed; width:44px; height:44px; opacity:.3; z-index:20; pointer-events:none; }
+    .crn-tl { top:14px;    left:14px;  border-top:1px solid var(--accent); border-left:1px solid var(--accent);  }
+    .crn-tr { top:14px;    right:14px; border-top:1px solid var(--accent); border-right:1px solid var(--accent); }
+    .crn-bl { bottom:36px; left:14px;  border-bottom:1px solid var(--accent); border-left:1px solid var(--accent);  }
+    .crn-br { bottom:36px; right:14px; border-bottom:1px solid var(--accent); border-right:1px solid var(--accent); }
+
+    /* status bar */
+    #sbar {
+      position:fixed; bottom:0; left:0; right:0; height:28px;
+      background:var(--panel); border-top:1px solid var(--border);
+      display:flex; align-items:center; padding:0 1rem; gap:1.5rem; z-index:200;
+    }
+    .si { font-size:.48rem; letter-spacing:.2em; color:var(--text-dim); }
+    .si b { color:var(--text-mid); font-weight:normal; }
+
+    /* screens */
+    .screen {
+      position:fixed; top:0; left:0; right:0; bottom:28px;
+      display:flex; flex-direction:column;
+      align-items:center; justify-content:center;
+      z-index:10; padding:1.2rem 1.4rem;
+      opacity:0; pointer-events:none;
+      transition:opacity .3s ease;
+      overflow-y:auto;
+    }
+    .screen.active { opacity:1; pointer-events:all; }
+
+    /* ── shared typography ── */
+    .page-title {
+      font-size:clamp(.85rem,3.5vw,1.1rem);
+      letter-spacing:.55em; color:var(--accent);
+      text-shadow:var(--glow-a); text-align:center;
+      margin-bottom:.25rem;
+    }
+    .page-sub {
+      font-size:.52rem; letter-spacing:.38em;
+      color:var(--text-mid); text-align:center;
+      margin-bottom:1.8rem;
+    }
+
+    /* ── buttons ── */
+    .btn {
+      background:transparent; border:1px solid var(--accent);
+      color:var(--accent); font-family:var(--mono);
+      font-size:.65rem; letter-spacing:.28em;
+      padding:.75rem 1.4rem; cursor:pointer;
+      text-transform:uppercase; width:100%; max-width:320px;
+      transition:background .15s, box-shadow .15s;
+      position:relative; overflow:hidden; min-height:48px;
+    }
+    .btn:active { background:rgba(0,255,200,.1); box-shadow:0 0 18px rgba(0,255,200,.18); }
+
+    .btn-danger  { border-color:var(--danger);  color:var(--danger);  }
+    .btn-danger:active  { background:rgba(255,48,64,.1); }
+    .btn-success { border-color:var(--success); color:var(--success); }
+    .btn-success:active { background:rgba(0,255,136,.1); }
+    .btn-warn    { border-color:var(--warning); color:var(--warning); }
+    .btn-warn:active    { background:rgba(255,170,0,.1); }
+
+    /* ── HOME SCREEN ── */
+    #nfc-no-support {
+      font-size:.54rem; letter-spacing:.12em; text-align:center;
+      color:var(--danger); max-width:280px; line-height:1.9;
+      margin-bottom:1.2rem; display:none;
+    }
+
+    .scan-btn {
+      width:150px; height:150px; border-radius:50%;
+      background:transparent; border:2px solid var(--accent);
+      box-shadow:0 0 30px rgba(0,255,200,.12), inset 0 0 20px rgba(0,255,200,.04);
+      cursor:pointer; display:flex; flex-direction:column;
+      align-items:center; justify-content:center; gap:.5rem;
+      color:var(--accent); font-family:var(--mono);
+      font-size:.52rem; letter-spacing:.3em; text-transform:uppercase;
+      transition:transform .15s, box-shadow .2s;
+      margin:1.6rem 0;
+    }
+    .scan-btn svg { width:56px; height:56px; }
+    .scan-btn:active { transform:scale(.93); }
+
+    .scan-btn.scanning {
+      border-color:var(--warning); color:var(--warning);
+      animation:pulse-ring 1.6s ease-in-out infinite;
+    }
+    .scan-btn.scanning svg { stroke:var(--warning) !important; }
+    .scan-btn:disabled { opacity:.35; cursor:default; }
+
+    @keyframes pulse-ring {
+      0%,100% { box-shadow:0 0 20px rgba(255,170,0,.1), inset 0 0 15px rgba(255,170,0,.04); }
+      50%      { box-shadow:0 0 55px rgba(255,170,0,.4), inset 0 0 30px rgba(255,170,0,.1);  }
+    }
+
+    #scan-status {
+      font-size:.56rem; letter-spacing:.28em; text-align:center;
+      color:var(--text-mid); min-height:1.2em;
+    }
+    #scan-status.scanning { color:var(--warning); }
+    #scan-status.error    { color:var(--danger);  }
+    #scan-status.ok       { color:var(--success); }
+
+    .last-scanned {
+      margin-top:1.4rem; padding:.5rem 1.2rem;
+      border:1px solid var(--border); background:var(--panel);
+      font-size:.5rem; letter-spacing:.2em; text-align:center;
+      color:var(--text-dim); display:none;
+    }
+    .last-scanned b { color:var(--accent); }
+
+    /* ── MODAL ── */
+    .modal-overlay {
+      position:fixed; inset:0; bottom:28px;
+      background:rgba(0,0,4,.75);
+      display:flex; align-items:center; justify-content:center;
+      z-index:300; padding:1.2rem;
+      opacity:0; pointer-events:none;
+      transition:opacity .22s;
+    }
+    .modal-overlay.active { opacity:1; pointer-events:all; }
+
+    .modal-card {
+      background:#060d18; border:1px solid var(--border);
+      box-shadow:0 0 60px rgba(0,255,200,.08);
+      padding:1.8rem 1.4rem 1.2rem;
+      width:100%; max-width:360px;
+      display:flex; flex-direction:column; gap:.7rem;
+      animation:modalIn .2s ease-out;
+    }
+    @keyframes modalIn {
+      from { transform:translateY(20px); opacity:0; }
+      to   { transform:translateY(0);    opacity:1; }
+    }
+
+    .modal-tag-id {
+      font-size:.48rem; letter-spacing:.45em;
+      color:var(--text-dim); text-align:center;
+    }
+    .modal-title {
+      font-size:clamp(1.1rem,4.5vw,1.5rem);
+      letter-spacing:.18em; color:var(--accent);
+      text-shadow:var(--glow-a); text-align:center;
+      padding-bottom:.8rem; border-bottom:1px solid var(--border);
+      margin-bottom:.1rem;
+    }
+
+    /* ── GAME ACTIVE SCREEN ── */
+    #screen-game { justify-content:flex-start; padding-top:3.5rem; }
+
+    .game-hdr { text-align:center; margin-bottom:1rem; width:100%; }
+    .game-hdr-id {
+      font-size:.48rem; letter-spacing:.45em; color:var(--text-dim);
+    }
+    .game-hdr-title {
+      font-size:clamp(.9rem,3.5vw,1.25rem);
+      letter-spacing:.22em; color:var(--accent); text-shadow:var(--glow-a);
+    }
+
+    .desc-box {
+      width:100%; max-width:400px;
+      background:rgba(0,14,7,.8); border:1px solid var(--border);
+      padding:.9rem 1rem; font-size:.68rem; line-height:1.95;
+      color:var(--text); white-space:pre-wrap;
+      max-height:170px; overflow-y:auto;
+      margin-bottom:1rem;
+    }
+    .desc-box.loading { color:var(--text-dim); font-style:italic; }
+    .desc-box.error   { color:var(--danger); }
+
+    /* ── AUDIO PLAYER ── */
+    .audio-player {
+      width:100%; max-width:380px;
+      border:1px solid var(--border); background:var(--panel);
+      padding:.9rem 1rem; margin-bottom:.9rem;
+    }
+    .ap-label {
+      font-size:.46rem; letter-spacing:.38em;
+      color:var(--text-dim); text-align:center;
+      margin-bottom:.65rem;
+    }
+    .ap-controls {
+      display:flex; align-items:center; gap:.6rem; margin-bottom:.45rem;
+    }
+    .icon-btn {
+      background:transparent; border:1px solid var(--border);
+      color:var(--accent); width:42px; height:42px; flex-shrink:0;
+      cursor:pointer; font-size:1.15rem;
+      display:flex; align-items:center; justify-content:center;
+      transition:background .12s;
+    }
+    .icon-btn:active   { background:rgba(0,255,200,.12); }
+    .icon-btn:disabled { opacity:.28; cursor:default; }
+
+    .progress-track {
+      flex:1; height:5px;
+      background:rgba(0,255,180,.08); border:1px solid var(--border);
+      cursor:pointer; position:relative;
+    }
+    .progress-fill {
+      height:100%; width:0%;
+      background:var(--accent);
+      box-shadow:0 0 6px var(--accent);
+      transition:width .25s linear; pointer-events:none;
+    }
+    .ap-time {
+      font-size:.46rem; letter-spacing:.15em;
+      color:var(--text-dim); text-align:center;
+    }
+    .ap-error {
+      font-size:.54rem; letter-spacing:.12em;
+      color:var(--danger); text-align:center;
+      padding:.4rem 0; display:none;
+    }
+
+    .game-actions {
+      display:flex; flex-direction:column;
+      gap:.6rem; width:100%; max-width:320px;
+    }
+
+    /* ── COMPLETE SCREEN ── */
+    .complete-icon {
+      font-size:3.8rem; color:var(--success);
+      text-shadow:var(--glow-s);
+      animation:scaleIn .35s ease-out;
+      margin-bottom:.4rem;
+    }
+    @keyframes scaleIn {
+      from { transform:scale(0); opacity:0; }
+      to   { transform:scale(1); opacity:1; }
+    }
+    .complete-title {
+      font-size:clamp(1.2rem,4.5vw,1.9rem);
+      letter-spacing:.4em; color:var(--success);
+      text-shadow:var(--glow-s); margin-bottom:.3rem;
+    }
+    .complete-sub {
+      font-size:.52rem; letter-spacing:.25em;
+      color:var(--text-mid); margin-bottom:1.3rem; text-align:center;
+    }
+    .code-hint {
+      font-size:.5rem; letter-spacing:.2em; color:var(--warning);
+      text-align:center; margin-top:.5rem; margin-bottom:1.2rem;
+      animation:blink .9s ease-in-out infinite;
+    }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+    /* ── GAME SELECT SCREEN ── */
+    #screen-select { justify-content:flex-start; padding-top:2.8rem; }
+
+    .game-list {
+      width:100%; max-width:400px;
+      overflow-y:auto;
+      flex:1; margin-bottom:.8rem;
+    }
+    .game-item {
+      display:flex; align-items:center; gap:.9rem;
+      padding:.72rem 1rem; border-bottom:1px solid var(--border);
+      cursor:pointer; background:transparent; width:100%;
+      text-align:left; font-family:var(--mono); color:var(--text);
+      min-height:54px; transition:background .12s;
+    }
+    .game-item:active { background:rgba(0,255,200,.06); }
+    .game-item-id {
+      font-size:.5rem; letter-spacing:.22em;
+      color:var(--text-dim); width:50px; flex-shrink:0;
+    }
+    .game-item-title { font-size:.74rem; letter-spacing:.08em; flex:1; }
+    .game-item-arrow { color:var(--text-dim); font-size:1rem; flex-shrink:0; }
+
+    /* ── FLASH + MISC ── */
+    #flash {
+      position:fixed; inset:0; pointer-events:none; z-index:8000; opacity:0;
+    }
+    #flash.red   { background:rgba(255,40,40,.2);  animation:flashOut .45s forwards; }
+    #flash.green { background:rgba(0,255,136,.1);  animation:flashOut .45s forwards; }
+    @keyframes flashOut { from{opacity:1} to{opacity:0} }
+
+    /* scrollbar */
+    ::-webkit-scrollbar            { width:3px; }
+    ::-webkit-scrollbar-track      { background:transparent; }
+    ::-webkit-scrollbar-thumb      { background:var(--border); }
+    ::-webkit-scrollbar-thumb:hover{ background:var(--text-dim); }
+  </style>
+</head>
+<body>
+
+<!-- corner brackets -->
+<div class="crn crn-tl"></div>
+<div class="crn crn-tr"></div>
+<div class="crn crn-bl"></div>
+<div class="crn crn-br"></div>
+
+<!-- status bar -->
+<div id="sbar">
+  <span class="si">AJOK EINDSPEL &nbsp;<b>TAG SCANNER</b></span>
+  <span class="si" style="margin-left:auto"><b id="sbar-game">—</b></span>
+  <span class="si"><b id="sbar-time">--:--</b></span>
+</div>
+
+<!-- flash overlay -->
+<div id="flash"></div>
+
+<!-- ══════════════════════════════════════════
+     SCREEN · HOME
+══════════════════════════════════════════ -->
+<div id="screen-home" class="screen active">
+  <div class="page-title">AJOK EINDSPEL</div>
+  <div class="page-sub">TAG SCANNER &nbsp;·&nbsp; HOST</div>
+
+  <div id="nfc-no-support">
+    ⚠ NFC NIET BESCHIKBAAR<br>
+    Web NFC werkt enkel in Chrome op Android.<br>
+    Gebruik "Kies Spel Handmatig" als alternatief.
+  </div>
+
+  <button id="btn-scan" class="scan-btn" onclick="toggleScan()">
+    <!-- NFC icon: bilateral arcs -->
+    <svg viewBox="0 0 48 48" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round">
+      <circle cx="24" cy="24" r="3" fill="var(--accent)" stroke="none"/>
+      <path d="M30 18 a9 9 0 0 1 0 12"/>
+      <path d="M35 13 a16 16 0 0 1 0 22"/>
+      <path d="M18 18 a9 9 0 0 0 0 12"/>
+      <path d="M13 13 a16 16 0 0 0 0 22"/>
+    </svg>
+    <span id="scan-label">SCAN TAG</span>
+  </button>
+
+  <div id="scan-status">TIK OM TE STARTEN</div>
+
+  <div id="last-scanned" class="last-scanned">
+    LAATSTE TAG: <b id="last-scanned-id">—</b>
+  </div>
+
+  <button class="btn" style="margin-top:2rem" onclick="showScreen('select')">
+    ≡ &nbsp;KIES SPEL HANDMATIG
+  </button>
+</div>
+
+<!-- ══════════════════════════════════════════
+     MODAL · GAME OPTIONS
+══════════════════════════════════════════ -->
+<div id="modal-game" class="modal-overlay">
+  <div class="modal-card">
+    <div class="modal-tag-id" id="modal-tag-id">TAG · GAME</div>
+    <div class="modal-title"  id="modal-title">Speltitel</div>
+
+    <button class="btn btn-warn"    onclick="startGameAudio()"   >▶ &nbsp;SPEEL UITLEG AUDIO</button>
+    <button class="btn btn-success" onclick="markGameComplete()" >✓ &nbsp;MARKEER ALS VOLTOOID</button>
+    <button class="btn"             onclick="closeModalToSelect()">↩ &nbsp;KIES ANDER SPEL</button>
+    <button class="btn btn-danger"  onclick="closeModal()" style="font-size:.55rem;opacity:.7;margin-top:.2rem">
+      × ANNULEER
+    </button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SCREEN · GAME ACTIVE
+══════════════════════════════════════════ -->
+<div id="screen-game" class="screen">
+  <div class="game-hdr">
+    <div class="game-hdr-id"    id="game-hdr-id">GAME-ID</div>
+    <div class="game-hdr-title" id="game-hdr-title">Speltitel</div>
+  </div>
+
+  <div id="desc-box" class="desc-box loading">Beschrijving laden…</div>
+
+  <div class="audio-player">
+    <div class="ap-label">◈ UITLEG AUDIO</div>
+    <div class="ap-controls">
+      <button id="btn-pp"     class="icon-btn" onclick="togglePlayPause()" disabled title="Afspelen / Pauzeren">⏵</button>
+      <div    id="prog-track" class="progress-track" onclick="seekAudio(event)">
+        <div  id="prog-fill"  class="progress-fill"></div>
+      </div>
+      <button id="btn-replay" class="icon-btn" onclick="replayAudio()" disabled title="Opnieuw">↺</button>
+    </div>
+    <div id="ap-time"  class="ap-time">0:00 / 0:00</div>
+    <div id="ap-error" class="ap-error">⚠ AUDIO BESTAND NIET GEVONDEN &nbsp;(audio/explanations/<span id="ap-error-file"></span>.mp3)</div>
+  </div>
+
+  <div class="game-actions">
+    <button class="btn btn-success" onclick="markGameComplete()">✓ &nbsp;SPEL VOLTOOID</button>
+    <button class="btn"             onclick="goHome()">← &nbsp;TERUG NAAR HOME</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SCREEN · GAME COMPLETE
+══════════════════════════════════════════ -->
+<div id="screen-complete" class="screen">
+  <div class="complete-icon">✓</div>
+  <div class="complete-title">SPEL VOLTOOID!</div>
+  <div class="complete-sub" id="complete-sub">GAME · VOLTOOID</div>
+
+  <div class="audio-player" style="max-width:360px;width:100%">
+    <div class="ap-label" style="color:var(--success)">◈ OPLOSSINGS AUDIO</div>
+    <div class="ap-controls">
+      <button id="btn-sol-pp"     class="icon-btn" onclick="toggleSolPlayPause()" disabled>⏵</button>
+      <div    id="sol-prog-track" class="progress-track" onclick="seekSol(event)">
+        <div  id="sol-prog-fill"  class="progress-fill" style="background:var(--success);box-shadow:0 0 6px var(--success)"></div>
+      </div>
+      <button id="btn-sol-replay" class="icon-btn" onclick="replaySol()" disabled>↺</button>
+    </div>
+    <div id="sol-ap-time"  class="ap-time">0:00 / 0:00</div>
+    <div id="sol-ap-error" class="ap-error">⚠ OPLOSSINGS-AUDIO NIET GEVONDEN &nbsp;(audio/solutions/<span id="sol-error-file"></span>.mp3)</div>
+  </div>
+
+  <div class="code-hint">↑ DE 6-LETTER CODE STAAT IN DE AUDIO ↑</div>
+
+  <button class="btn btn-success" onclick="goHome()">← &nbsp;NIEUW SPEL SCANNEN</button>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SCREEN · GAME SELECT
+══════════════════════════════════════════ -->
+<div id="screen-select" class="screen">
+  <div class="page-title">KIES EEN SPEL</div>
+  <div class="page-sub">HANDMATIGE SELECTIE</div>
+
+  <div id="game-list" class="game-list"><!-- filled by JS --></div>
+
+  <button class="btn" style="max-width:320px;flex-shrink:0" onclick="showScreen('home')">
+    ← &nbsp;TERUG
+  </button>
+</div>
+
+<script>
+// ─────────────────────────────────────────────────────────────
+//  GAME REGISTRY
+//  To add a game: push a new entry here.
+//  Audio files: audio/explanations/<ID>.mp3 and audio/solutions/<ID>.mp3
+// ─────────────────────────────────────────────────────────────
+const GAMES = [
+  {
+    id: '10BAL', title: '10 Baltoetsen',
+    description: `Raak de bal 10 keer achter elkaar aan zonder dat hij op de grond valt!
+
+Gebruik je hoofd, voeten, knieën, schouders of handen — alles mag!
+Alle teamleden mogen samenwerken en de bal doorgeven.
+Als de bal de grond raakt, begin je opnieuw bij 0.
+Bereik 10 aanrakingen achter elkaar om dit spel te voltooien.`,
+  },
+  {
+    id: 'LANDR', title: 'Land zonder R en I',
+    description: `Noem landen, steden of plaatsen zonder de letters R en I te gebruiken!
+
+Iedereen zegt om de beurt een land, stad of dorp.
+De naam mag geen R en geen I bevatten (hoofdletters of kleine letters).
+Wie een naam zegt mét R of I, valt af.
+Wie niets kan bedenken binnen 5 seconden, valt ook af.
+Wie als laatste overblijft, wint het spel!`,
+  },
+  {
+    id: 'MEMOR', title: 'Memory',
+    description: `Vind alle kaartenpaartjes door je geheugen te gebruiken!
+
+Leg alle kaarten omgekeerd (beeldkant naar beneden) neer op een vlakke ondergrond.
+Om de beurt draait een speler twee kaarten om.
+Als de twee kaarten een paartje vormen, mag je ze houden en nog een keer spelen.
+Als ze niet overeenkomen, draai je beide kaarten terug om.
+Wie de meeste paartjes heeft als alle kaarten weg zijn, wint!`,
+  },
+  {
+    id: 'PARKO', title: 'Parkourtje',
+    description: `Bouw samen een parcours en doorloop het zo snel en feilloos mogelijk!
+
+Bouw met de groep een parcours van obstakels in de omgeving.
+Gebruik wat je vindt: takken, stenen, stoelen, touw...
+Elk teamlid loopt het parcours één keer.
+Wie het parcours het snelst en zonder fouten doorloopt, wint!
+
+Voorbeelden van obstakels:
+- Balanceer op een balk
+- Kruip onder een touw door
+- Ren zigzag tussen paaltjes
+- Spring over een obstakel`,
+  },
+  {
+    id: 'KAART', title: 'Kaartenhuisje',
+    description: `Bouw samen een kaartenhuisje van minstens 3 verdiepingen hoog!
+
+Gebruik gewone speelkaarten (de begeleider heeft ze bij zich).
+Het huisje moet minstens 3 verdiepingen hoog zijn.
+Je mag met z'n allen samenwerken.
+Het huisje moet minstens 5 seconden zelfstandig blijven staan.
+Waaier of blaas niet tegen het huisje!
+
+Tip: begin met een stabiele basis en bouw rustig verder omhoog.`,
+  },
+  {
+    id: 'MASTE', title: 'Mastermind',
+    description: `Raad de geheime kleurencode van 4 kleuren!
+
+Eén speler (de codemaker) verzint in het geheim een code van 4 kleuren.
+Gebruik de kleuren: rood, blauw, groen, geel, wit, zwart.
+Kleuren mogen herhaald worden in de code.
+
+De rest probeert de code te raden in maximaal 10 beurten.
+Na elke poging geeft de codemaker aanwijzingen:
+- ZWARTE STEEN = juiste kleur op de juiste positie
+- WITTE STEEN  = juiste kleur maar op de verkeerde positie
+
+Wie de code raadt voor de beurten op zijn, wint!`,
+  },
+  {
+    id: 'RAADS', title: 'Logische Raadsels',
+    description: `Los samen een reeks wiskundige en logische puzzels op!
+
+De begeleider stelt de raadsels één voor één voor.
+Werk samen als groep om de oplossingen te vinden.
+
+Voorbeelden van raadsels:
+- Ik heb steden zonder huizen, bossen zonder bomen, water zonder vissen. Wat ben ik? (Een kaart)
+- Een boer heeft 17 schapen. Alle behalve 9 sterven. Hoeveel zijn er over? (9)
+- Wat gaat op 4 benen 's morgens, 2 benen 's middags, 3 benen 's avonds? (De mens)
+- Maak van 8 8 8 8 = 500 met enkel plus-tekens. (888 + 88 + 8 + 8 + 8)`,
+  },
+  {
+    id: 'TRESR', title: 'Ik ga op reis…',
+    description: `Het klassieke geheugenspel — onthoud de steeds langere reislijst!
+
+De eerste speler zegt: "Ik ga op reis en ik neem mee: een [iets]."
+De volgende herhaalt de zin EN voegt een nieuw item toe aan het einde.
+Zo gaat het verder: elke speler herhaalt alles en voegt iets toe.
+
+Wie iets vergeet of in de verkeerde volgorde zegt, valt af.
+Wie als laatste overblijft zonder fouten, wint!`,
+  },
+  {
+    id: 'DODVI', title: 'Dode Vis',
+    description: `Wie kan het langst roerloos de "dode vis" spelen?
+
+Iedereen gaat op de grond liggen als een dode vis — zo stil en levensloos mogelijk.
+Lachen, bewegen, knipperen of geluid maken is verboden!
+De begeleider probeert de groep aan het lachen te krijgen door grappige dingen te zeggen of te doen.
+Wie beweegt of lacht, is eruit.
+Wie als laatste nog steeds de perfecte dode vis speelt, wint!`,
+  },
+  {
+    id: 'BRIEF', title: 'Brief over het Kamp',
+    description: `Schrijf samen een brief over jullie kampbeleving!
+
+De brief moet minstens een halve bladzijde zijn.
+Zorg dat iedereen minstens één zin bijdraagt.
+
+Denk aan:
+- Wat vonden jullie het leukste moment tot nu toe?
+- Welk grappig voorval is er geweest?
+- Wat hebben jullie geleerd of ontdekt?
+- Wie zijn nieuwe vrienden geworden?
+
+Lees de brief daarna hardop voor aan de begeleider.`,
+  },
+  {
+    id: 'ZINDO', title: 'Zin Doorzeggen',
+    description: `Fluister een zin door en kijk hoe hij verandert!
+
+De begeleider fluistert een lange, ingewikkelde zin in het oor van de eerste speler.
+Die fluistert de zin door aan de volgende — slechts één keer, niet herhalen!
+Zo gaat het verder tot de laatste speler.
+De laatste speler zegt hardop wat hij gehoord heeft.
+Vergelijk met de originele zin — vaak met grappige resultaten!
+
+Speel meerdere rondes met steeds een andere beginstarter.`,
+  },
+  {
+    id: 'TEKEN', title: 'Tekenwedstrijd',
+    description: `Teken iets van het kamp in 5 minuten — de groep stemt!
+
+De begeleider kiest een onderwerp en iedereen tekent hetzelfde, elk op zijn eigen blaadje.
+Je hebt precies 5 minuten.
+Daarna stemt de groep voor de mooiste OF grappigste tekening.
+
+Suggesties voor onderwerpen:
+- Het kampveld vanuit de lucht
+- Jouw kampgenoot als superheld
+- Het grappigste kampmoment
+- De begeleider als cartoon`,
+  },
+  {
+    id: 'ACHTE', title: 'Achteruitlopen',
+    description: `Loop een volledig rondje achterwaarts rond het kampveld!
+
+Alle teamleden starten op dezelfde plek.
+Loop samen achteruitwaarts een volledig rondje rond het kampveld.
+Niemand mag omdraaien of omvallen!
+Jullie mogen elkaar helpen en waarschuwen voor obstakels.
+Het rondje is voltooid als iedereen terug op de startplek staat.
+
+Omdraaien = spel opnieuw beginnen.`,
+  },
+  {
+    id: 'DOOLH', title: 'Doolhof',
+    description: `Los het doolhof zo snel mogelijk op!
+
+De begeleider geeft jullie het doolhofblad en een pen.
+Vind samen de weg van het begin tot de uitgang.
+Je mag de pen van het papier tillen, maar ga niet door muren!
+Werk samen: iemand houdt het papier, iemand tekent, iemand kijkt mee.
+De begeleider stopt de tijd — probeer het zo snel mogelijk te doen!
+
+Tip: werk van de uitgang terug naar het begin.`,
+  },
+  {
+    id: 'VRKLE', title: 'Onherkenbaar Verkleden',
+    description: `Verklee je zo goed mogelijk zodat niemand je herkent!
+
+Iedereen heeft 5 minuten om zich zo onherkenbaar mogelijk te verkleden.
+Gebruik kleding, sjaals, hoeden, brillen, schmink, bladeren... wees creatief!
+Na 5 minuten beoordeelt de begeleider wie het meest onherkenbaar is.
+De meest onherkenbare persoon wint het spel!
+
+Tip: maak een foto van het resultaat als herinnering!`,
+  },
+  {
+    id: 'TIKBO', title: 'Tik Tak Boem',
+    description: `Geef de bom snel door — wie hem houdt als de tijd om is, valt af!
+
+De begeleider bedenkt een categorie (bijv. "dieren met 4 poten").
+De eerste speler houdt de "bom" (een bal, knuffel of ander voorwerp).
+Je mag de bom pas doorgeven als je iets in de categorie hebt gezegd.
+Wie de bom vasthoudt als de begeleider "BOEM!" roept, valt af.
+
+Categorievoorbeelden:
+- Landen in Europa
+- Dingen in een slaapzak
+- Woorden die eindigen op -jes
+
+De begeleider roept "BOEM!" op een onverwacht moment.`,
+  },
+];
+
+// ─────────────────────────────────────────────────────────────
+//  STATE
+// ─────────────────────────────────────────────────────────────
+let currentGameId     = null;
+let nfcController     = null;
+let nfcScanning       = false;
+let explanationAudio  = null;
+let solutionAudio     = null;
+
+// ─────────────────────────────────────────────────────────────
+//  INIT
+// ─────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  buildGameList();
+  checkNfcSupport();
+  updateClock();
+  setInterval(updateClock, 10_000);
+});
+
+function updateClock() {
+  document.getElementById('sbar-time').textContent =
+    new Date().toLocaleTimeString('nl-BE', { hour: '2-digit', minute: '2-digit' });
+}
+
+function checkNfcSupport() {
+  if (!('NDEFReader' in window)) {
+    document.getElementById('nfc-no-support').style.display = 'block';
+    const btn = document.getElementById('btn-scan');
+    btn.disabled = true;
+    setScanStatus('NFC NIET BESCHIKBAAR', 'error');
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
+//  NAVIGATION
+// ─────────────────────────────────────────────────────────────
+function showScreen(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + name).classList.add('active');
+}
+
+function openModal()  { document.getElementById('modal-game').classList.add('active'); }
+function closeModal() { document.getElementById('modal-game').classList.remove('active'); }
+
+function closeModalToSelect() {
+  closeModal();
+  showScreen('select');
+}
+
+function goHome() {
+  stopAllAudio();
+  showScreen('home');
+}
+
+// ─────────────────────────────────────────────────────────────
+//  NFC SCANNING
+// ─────────────────────────────────────────────────────────────
+async function toggleScan() {
+  nfcScanning ? stopScan() : await startScan();
+}
+
+async function startScan() {
+  if (!('NDEFReader' in window)) return;
+  try {
+    nfcController = new AbortController();
+    const ndef = new NDEFReader();
+    await ndef.scan({ signal: nfcController.signal });
+
+    nfcScanning = true;
+    document.getElementById('btn-scan').classList.add('scanning');
+    document.getElementById('scan-label').textContent = 'SCANNEN…';
+    setScanStatus('HOUD TAG VOOR DE TELEFOON', 'scanning');
+
+    ndef.addEventListener('reading', ({ message }) => {
+      let gameId = null;
+
+      for (const record of message.records) {
+        const decoder = new TextDecoder(record.encoding || 'utf-8');
+        if (record.recordType === 'text') {
+          gameId = decoder.decode(record.data).trim().toUpperCase();
+          break;
+        }
+        if (record.recordType === 'url') {
+          const url = decoder.decode(record.data).trim().toUpperCase();
+          gameId = url.split('/').pop().split('?')[0];
+          break;
+        }
+      }
+
+      // Fallback: try raw data of first record
+      if (!gameId && message.records.length > 0) {
+        try {
+          const decoder = new TextDecoder();
+          gameId = decoder.decode(message.records[0].data).trim().toUpperCase();
+        } catch { /* ignore */ }
+      }
+
+      if (gameId) handleTagRead(gameId);
+    });
+
+    ndef.addEventListener('readingerror', () => {
+      setScanStatus('LEESFOUT · PROBEER OPNIEUW', 'error');
+    });
+
+  } catch (err) {
+    nfcScanning = false;
+    const msgs = {
+      NotAllowedError:   'TOEGANG GEWEIGERD · GEEF NFC TOESTEMMING',
+      NotSupportedError: 'NFC NIET ONDERSTEUND',
+      AbortError:        'SCAN GESTOPT',
+    };
+    setScanStatus(msgs[err.name] || `FOUT: ${err.message}`, 'error');
+  }
+}
+
+function stopScan() {
+  nfcController?.abort();
+  nfcController  = null;
+  nfcScanning    = false;
+  document.getElementById('btn-scan').classList.remove('scanning');
+  document.getElementById('scan-label').textContent = 'SCAN TAG';
+  setScanStatus('GESTOPT · TIK OM TE HERVATTEN', '');
+}
+
+function handleTagRead(gameId) {
+  const game = GAMES.find(g => g.id === gameId);
+
+  document.getElementById('last-scanned').style.display = 'block';
+  document.getElementById('last-scanned-id').textContent = gameId;
+
+  if (!game) {
+    setScanStatus(`ONBEKENDE TAG: ${gameId}`, 'error');
+    flash('red');
+    return;
+  }
+
+  setScanStatus(`TAG GELEZEN: ${game.title.toUpperCase()}`, 'ok');
+  flash('green');
+  openGameModal(game);
+}
+
+// ─────────────────────────────────────────────────────────────
+//  GAME MODAL
+// ─────────────────────────────────────────────────────────────
+function openGameModal(game) {
+  currentGameId = game.id;
+  document.getElementById('modal-tag-id').textContent = `TAG · ${game.id}`;
+  document.getElementById('modal-title').textContent  = game.title;
+  document.getElementById('sbar-game').textContent    = game.id;
+  showScreen('home');
+  openModal();
+}
+
+function startGameAudio() {
+  closeModal();
+  loadGameScreen(currentGameId, true);
+}
+
+function markGameComplete() {
+  const id = currentGameId;
+  closeModal();
+  loadCompleteScreen(id);
+}
+
+// ─────────────────────────────────────────────────────────────
+//  GAME ACTIVE SCREEN
+// ─────────────────────────────────────────────────────────────
+async function loadGameScreen(gameId, autoPlay = false) {
+  stopAllAudio();
+  const game = GAMES.find(g => g.id === gameId);
+  if (!game) return;
+
+  currentGameId = gameId;
+  document.getElementById('game-hdr-id').textContent    = gameId;
+  document.getElementById('game-hdr-title').textContent = game.title;
+  showScreen('game');
+
+  // Show description (inline, no fetch)
+  const box = document.getElementById('desc-box');
+  box.className   = 'desc-box';
+  box.textContent = loadDescription(gameId);
+
+  // Set up explanation audio
+  resetAudioUI('explanation');
+  document.getElementById('ap-error-file').textContent = gameId;
+  explanationAudio = new Audio(`audio/explanations/${gameId}.mp3`);
+
+  explanationAudio.addEventListener('canplay', () => {
+    setAudioBtns('explanation', false);
+    if (autoPlay) explanationAudio.play().catch(() => {});
+  });
+  explanationAudio.addEventListener('error',       () => showAudioError('explanation'));
+  explanationAudio.addEventListener('timeupdate',  () => updateAudioUI('explanation'));
+  explanationAudio.addEventListener('play',        () => document.getElementById('btn-pp').textContent  = '⏸');
+  explanationAudio.addEventListener('pause',       () => document.getElementById('btn-pp').textContent  = '⏵');
+  explanationAudio.addEventListener('ended',       () => document.getElementById('btn-pp').textContent  = '⏵');
+}
+
+function togglePlayPause() {
+  if (!explanationAudio) return;
+  explanationAudio.paused ? explanationAudio.play().catch(() => {}) : explanationAudio.pause();
+}
+function replayAudio() {
+  if (!explanationAudio) return;
+  explanationAudio.currentTime = 0;
+  explanationAudio.play().catch(() => {});
+}
+function seekAudio(e) {
+  if (!explanationAudio?.duration) return;
+  const r = document.getElementById('prog-track').getBoundingClientRect();
+  explanationAudio.currentTime = ((e.clientX - r.left) / r.width) * explanationAudio.duration;
+}
+
+// ─────────────────────────────────────────────────────────────
+//  COMPLETE SCREEN
+// ─────────────────────────────────────────────────────────────
+function loadCompleteScreen(gameId) {
+  stopAllAudio();
+  const game = GAMES.find(g => g.id === gameId);
+  if (!game) return;
+
+  currentGameId = gameId;
+  document.getElementById('complete-sub').textContent = `${gameId} · ${game.title.toUpperCase()}`;
+  showScreen('complete');
+  flash('green');
+
+  // Set up solution audio
+  resetAudioUI('solution');
+  document.getElementById('sol-error-file').textContent = gameId;
+  solutionAudio = new Audio(`audio/solutions/${gameId}.mp3`);
+
+  solutionAudio.addEventListener('canplay', () => {
+    setAudioBtns('solution', false);
+    solutionAudio.play().catch(() => {});
+  });
+  solutionAudio.addEventListener('error',      () => showAudioError('solution'));
+  solutionAudio.addEventListener('timeupdate', () => updateAudioUI('solution'));
+  solutionAudio.addEventListener('play',       () => document.getElementById('btn-sol-pp').textContent = '⏸');
+  solutionAudio.addEventListener('pause',      () => document.getElementById('btn-sol-pp').textContent = '⏵');
+  solutionAudio.addEventListener('ended',      () => document.getElementById('btn-sol-pp').textContent = '⏵');
+}
+
+function toggleSolPlayPause() {
+  if (!solutionAudio) return;
+  solutionAudio.paused ? solutionAudio.play().catch(() => {}) : solutionAudio.pause();
+}
+function replaySol() {
+  if (!solutionAudio) return;
+  solutionAudio.currentTime = 0;
+  solutionAudio.play().catch(() => {});
+}
+function seekSol(e) {
+  if (!solutionAudio?.duration) return;
+  const r = document.getElementById('sol-prog-track').getBoundingClientRect();
+  solutionAudio.currentTime = ((e.clientX - r.left) / r.width) * solutionAudio.duration;
+}
+
+// ─────────────────────────────────────────────────────────────
+//  GAME LIST (manual select)
+// ─────────────────────────────────────────────────────────────
+function buildGameList() {
+  const list = document.getElementById('game-list');
+  GAMES.forEach(game => {
+    const btn = document.createElement('button');
+    btn.className = 'game-item';
+    btn.innerHTML =
+      `<span class="game-item-id">${game.id}</span>` +
+      `<span class="game-item-title">${game.title}</span>` +
+      `<span class="game-item-arrow">›</span>`;
+    btn.addEventListener('click', () => openGameModal(game));
+    list.appendChild(btn);
+  });
+}
+
+// ─────────────────────────────────────────────────────────────
+//  DESCRIPTION LOADING  (inline — no fetch needed)
+// ─────────────────────────────────────────────────────────────
+function loadDescription(gameId) {
+  const game = GAMES.find(g => g.id === gameId);
+  return game?.description?.trim() || 'Geen beschrijving beschikbaar.';
+}
+
+// ─────────────────────────────────────────────────────────────
+//  AUDIO HELPERS
+// ─────────────────────────────────────────────────────────────
+function stopAllAudio() {
+  for (const a of [explanationAudio, solutionAudio]) {
+    if (!a) continue;
+    a.pause(); a.src = '';
+  }
+  explanationAudio = null;
+  solutionAudio    = null;
+}
+
+function resetAudioUI(type) {
+  const isExp = type === 'explanation';
+  const pp     = isExp ? 'btn-pp'          : 'btn-sol-pp';
+  const replay = isExp ? 'btn-replay'      : 'btn-sol-replay';
+  const fill   = isExp ? 'prog-fill'       : 'sol-prog-fill';
+  const time   = isExp ? 'ap-time'         : 'sol-ap-time';
+  const err    = isExp ? 'ap-error'        : 'sol-ap-error';
+  document.getElementById(pp).disabled     = true;
+  document.getElementById(pp).textContent  = '⏵';
+  document.getElementById(replay).disabled = true;
+  document.getElementById(fill).style.width = '0%';
+  document.getElementById(time).textContent = '0:00 / 0:00';
+  document.getElementById(err).style.display = 'none';
+}
+
+function setAudioBtns(type, disabled) {
+  const isExp = type === 'explanation';
+  document.getElementById(isExp ? 'btn-pp'     : 'btn-sol-pp').disabled     = disabled;
+  document.getElementById(isExp ? 'btn-replay' : 'btn-sol-replay').disabled = disabled;
+}
+
+function showAudioError(type) {
+  const isExp = type === 'explanation';
+  document.getElementById(isExp ? 'ap-error' : 'sol-ap-error').style.display = 'block';
+  setAudioBtns(type, true);
+}
+
+function updateAudioUI(type) {
+  const isExp = type === 'explanation';
+  const audio  = isExp ? explanationAudio : solutionAudio;
+  if (!audio?.duration) return;
+  const pct = (audio.currentTime / audio.duration) * 100;
+  document.getElementById(isExp ? 'prog-fill'   : 'sol-prog-fill').style.width = pct + '%';
+  document.getElementById(isExp ? 'ap-time'     : 'sol-ap-time').textContent   =
+    fmt(audio.currentTime) + ' / ' + fmt(audio.duration);
+}
+
+function fmt(s) {
+  if (!isFinite(s)) return '0:00';
+  return Math.floor(s / 60) + ':' + String(Math.floor(s % 60)).padStart(2, '0');
+}
+
+// ─────────────────────────────────────────────────────────────
+//  UI UTILS
+// ─────────────────────────────────────────────────────────────
+function setScanStatus(msg, cls) {
+  const el = document.getElementById('scan-status');
+  el.textContent = msg;
+  el.className   = cls || '';
+}
+
+function flash(color) {
+  const el = document.getElementById('flash');
+  el.className = '';
+  void el.offsetWidth;
+  el.className = color;
+}
+</script>
+</body>
+</html>
