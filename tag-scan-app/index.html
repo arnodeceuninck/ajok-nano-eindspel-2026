@@ -496,6 +496,9 @@
   <button class="btn" style="max-width:320px;flex-shrink:0" onclick="showScreen('home')">
     ← &nbsp;TERUG
   </button>
+  <button class="btn btn-warn" style="max-width:320px;flex-shrink:0;margin-top:.5rem;font-size:.56rem;opacity:.75" onclick="forceReload()">
+    ↺ &nbsp;FORCEER HERLADEN
+  </button>
 </div>
 
 <script>
@@ -1184,6 +1187,21 @@ function flash(color) {
   el.className = '';
   void el.offsetWidth;
   el.className = color;
+}
+
+// ─────────────────────────────────────────────────────────────
+//  FORCE RELOAD  (clears SW cache + reloads fresh)
+// ─────────────────────────────────────────────────────────────
+async function forceReload() {
+  if ('serviceWorker' in navigator) {
+    const regs = await navigator.serviceWorker.getRegistrations().catch(() => []);
+    await Promise.all(regs.map(r => r.unregister()));
+  }
+  if ('caches' in window) {
+    const names = await caches.keys().catch(() => []);
+    await Promise.all(names.map(n => caches.delete(n)));
+  }
+  location.reload();
 }
 </script>
 </body>
