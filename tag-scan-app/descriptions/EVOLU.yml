@@ -1,0 +1,16 @@
+title: Evolutie
+description: Evolueer van Ei naar Superheld via steen-schaar-papier!
+details: |
+  Iedereen begint als 'Ei' (gehurkt lopen, "tok tok" zeggen).
+  Zoek iemand van hetzelfde niveau en speel steen-schaar-papier.
+
+  De niveaus (van laag naar hoog):
+    1. Ei       — gehurkt lopen, "tok tok" zeggen
+    2. Kip      — halfhoog lopen, fladderen met de armen
+    3. Dinosaurus — grote stappen, brullen
+    4. Superheld  — hand omhoog steken, je hebt gewonnen!
+
+  Win je? Je evolueert naar het volgende niveau.
+  Verlies je? Je zakt één niveau terug (behalve als je al een Ei bent).
+  Je mag alleen spelen tegen iemand van hetzelfde niveau.
+  Bereik niveau 4 (Superheld) om het spel te winnen!
