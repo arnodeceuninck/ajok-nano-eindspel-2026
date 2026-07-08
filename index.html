@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AJOK · NANO</title>
+  <style>
+    :root {
+      --bg:       #070710;
+      --panel:    rgba(0,255,180,.025);
+      --border:   rgba(0,255,180,.14);
+      --accent:   #00ffc8;
+      --text:     #c8ffe8;
+      --text-mid: #4a9a70;
+      --text-dim: #2a5a40;
+      --mono:     'Courier New', 'Lucida Console', monospace;
+      --glow-a:   0 0 10px rgba(0,255,200,.7), 0 0 35px rgba(0,255,200,.3);
+    }
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body {
+      width: 100%; min-height: 100%;
+      background: var(--bg); color: var(--text);
+      font-family: var(--mono);
+    }
+
+    /* scanlines */
+    body::before {
+      content: '';
+      position: fixed; inset: 0; pointer-events: none; z-index: 100;
+      background: repeating-linear-gradient(
+        0deg, transparent, transparent 2px,
+        rgba(0,0,0,.15) 2px, rgba(0,0,0,.15) 4px
+      );
+    }
+
+    /* subtle grid */
+    body::after {
+      content: '';
+      position: fixed; inset: 0; pointer-events: none;
+      background-image:
+        linear-gradient(var(--border) 1px, transparent 1px),
+        linear-gradient(90deg, var(--border) 1px, transparent 1px);
+      background-size: 40px 40px;
+      opacity: .4;
+    }
+
+    .container {
+      position: relative; z-index: 1;
+      max-width: 680px; margin: 0 auto;
+      padding: 60px 24px 80px;
+      display: flex; flex-direction: column; align-items: center; gap: 48px;
+    }
+
+    /* header */
+    header { text-align: center; }
+    .site-label {
+      font-size: .7rem; letter-spacing: .25em;
+      color: var(--text-mid); text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+    h1 {
+      font-size: clamp(2rem, 7vw, 3.2rem);
+      letter-spacing: .12em; text-transform: uppercase;
+      color: var(--accent);
+      text-shadow: var(--glow-a);
+      line-height: 1.1;
+    }
+    .subtitle {
+      margin-top: 14px;
+      font-size: .75rem; letter-spacing: .15em;
+      color: var(--text-dim); text-transform: uppercase;
+    }
+
+    /* divider */
+    .divider {
+      width: 100%; height: 1px;
+      background: linear-gradient(90deg, transparent, var(--accent), transparent);
+      opacity: .35;
+    }
+
+    /* cards */
+    .cards {
+      display: flex; flex-direction: column; gap: 20px; width: 100%;
+    }
+
+    .card {
+      display: block; text-decoration: none; color: inherit;
+      border: 1px solid var(--border);
+      background: var(--panel);
+      padding: 28px 32px;
+      transition: border-color .2s, box-shadow .2s, background .2s;
+      cursor: pointer;
+    }
+    .card:hover {
+      border-color: var(--accent);
+      background: rgba(0,255,180,.055);
+      box-shadow: var(--glow-a), inset 0 0 30px rgba(0,255,180,.04);
+    }
+
+    .card-index {
+      font-size: .6rem; letter-spacing: .25em; color: var(--text-dim);
+      text-transform: uppercase; margin-bottom: 10px;
+    }
+    .card-title {
+      font-size: 1.1rem; letter-spacing: .1em; text-transform: uppercase;
+      color: var(--accent); text-shadow: var(--glow-a);
+      margin-bottom: 8px;
+    }
+    .card-desc {
+      font-size: .72rem; letter-spacing: .06em; line-height: 1.7;
+      color: var(--text-mid);
+    }
+    .card-arrow {
+      margin-top: 18px;
+      font-size: .65rem; letter-spacing: .2em; color: var(--text-dim);
+      text-transform: uppercase;
+      transition: color .2s;
+    }
+    .card:hover .card-arrow { color: var(--accent); }
+
+    /* footer */
+    footer {
+      font-size: .6rem; letter-spacing: .15em; color: var(--text-dim);
+      text-transform: uppercase; text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+
+    <header>
+      <p class="site-label">nano.arnodece.com</p>
+      <h1>AJOK<br>Eindspel</h1>
+      <p class="subtitle">selecteer een module</p>
+    </header>
+
+    <div class="divider"></div>
+
+    <nav class="cards" aria-label="Modules">
+
+      <a class="card" href="tag-scan-app/index.html">
+        <p class="card-index">module_01</p>
+        <p class="card-title">TAG Scanner</p>
+        <p class="card-desc">
+          Scan NFC-tags om locaties te ontgrendelen,<br>
+          audiofragmenten af te spelen en aanwijzingen te verzamelen.
+        </p>
+        <p class="card-arrow">[ open module → ]</p>
+      </a>
+
+      <a class="card" href="mastermind-website/index.html">
+        <p class="card-index">module_02</p>
+        <p class="card-title">Nexus Breach Protocol</p>
+        <p class="card-desc">
+          Kraak de code van het Nexus-systeem.<br>
+          Mastermind-variant met cyberpunk-interface.
+        </p>
+        <p class="card-arrow">[ open module → ]</p>
+      </a>
+
+    </nav>
+
+    <div class="divider"></div>
+
+    <footer>ajok &nbsp;·&nbsp; 2026</footer>
+
+  </div>
+</body>
+</html>
