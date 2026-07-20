@@ -167,15 +167,19 @@
     .mm-lbl { font-size:.46rem; letter-spacing:.11em; text-align:center; }
 
     /* ── mastermind history ── */
-    #mm-hist {
-      max-height:165px; overflow-y:auto;
+    #mm-hist, #mm-hist-main {
+      max-height:200px; overflow-y:auto;
       margin-top:1.4rem; min-width:350px;
     }
-    .hist-hdr { font-size:.5rem; letter-spacing:.35em; color:var(--text-dim); text-align:center; margin-bottom:.6rem; }
-    .hist-row { display:flex; align-items:center; gap:.55rem; margin-bottom:.45rem; justify-content:center; }
-    .hist-dot { width:17px; height:17px; border-radius:50%; flex-shrink:0; }
-    .hist-sep { width:1px; height:16px; background:var(--border); flex-shrink:0; }
-    .hist-res { font-size:.54rem; letter-spacing:.12em; }
+    .hist-hdr { font-size:.5rem; letter-spacing:.35em; color:var(--text-dim); text-align:center; margin-bottom:.4rem; }
+    .hist-legend { font-size:.48rem; letter-spacing:.1em; text-align:center; margin-bottom:.75rem; }
+    .hist-row { display:flex; align-items:center; gap:.55rem; margin-bottom:.5rem; justify-content:center; }
+    .hist-dot { width:24px; height:24px; border-radius:50%; flex-shrink:0; }
+    .hist-sep { width:1px; height:22px; background:var(--border); flex-shrink:0; }
+    .hist-res { font-size:.72rem; letter-spacing:.06em; display:flex; gap:.9rem; }
+    .hist-res-item { display:flex; align-items:center; gap:.3rem; }
+    .hist-res-count { font-size:.9rem; font-weight:700; }
+    .hist-res-lbl { font-size:.46rem; letter-spacing:.15em; opacity:.75; line-height:1.15; text-transform:uppercase; }
 
     /* ── validation terminal ── */
     #screen-validation { padding:1.5rem 2rem 32px; }
@@ -397,6 +401,7 @@
   <div class="code-row" id="code-row"></div>
   <button class="btn" id="btn-code">[ SUBMIT CODE ]</button>
   <div id="code-msg"></div>
+  <div id="mm-hist-main"></div>
 </div>
 
 
@@ -498,7 +503,7 @@
     </div>
 
     <div class="hp-footer">
-      <span class="hp-notice">ALT+H · CHANGES APPLY IMMEDIATELY</span>
+      <span class="hp-notice">ALT+H / CTRL+H / CMD+H · CHANGES APPLY IMMEDIATELY</span>
       <button class="hp-btn" id="hp-close-btn">[ CLOSE ]</button>
     </div>
   </div>
@@ -884,39 +889,58 @@ function renderCircles() {
 }
 
 function renderHistory() {
-  const wrap = $('mm-hist');
-  wrap.innerHTML = '';
-  if (!S.mmHistory.length) return;
+  ['mm-hist', 'mm-hist-main'].forEach(id => {
+    const wrap = $(id);
+    if (!wrap) return;
+    wrap.innerHTML = '';
+    if (!S.mmHistory.length) return;
 
-  const hdr = document.createElement('div');
-  hdr.className   = 'hist-hdr';
-  hdr.textContent = '// PREVIOUS ATTEMPTS';
-  wrap.appendChild(hdr);
+    const hdr = document.createElement('div');
+    hdr.className   = 'hist-hdr';
+    hdr.textContent = '// PREVIOUS ATTEMPTS';
+    wrap.appendChild(hdr);
 
-  S.mmHistory.forEach(({guess, res}) => {
-    const row = document.createElement('div');
-    row.className = 'hist-row';
+    // legend — only once per container
+    const leg = document.createElement('div');
+    leg.className = 'hist-legend';
+    leg.innerHTML =
+      `<span style="color:var(--success)">&#9679; exact position &amp; color</span>` +
+      `&emsp;` +
+      `<span style="color:var(--warning)">&#9680; right color, wrong spot</span>`;
+    wrap.appendChild(leg);
 
-    guess.forEach(ci => {
-      const d = document.createElement('div');
-      d.className     = 'hist-dot';
-      const c         = COLORS[ci];
-      d.style.cssText = `background:${c.hex};box-shadow:0 0 5px ${c.glow};`;
-      row.appendChild(d);
+    S.mmHistory.forEach(({guess, res}) => {
+      const row = document.createElement('div');
+      row.className = 'hist-row';
+
+      guess.forEach(ci => {
+        const d = document.createElement('div');
+        d.className     = 'hist-dot';
+        const c         = COLORS[ci];
+        d.style.cssText = `background:${c.hex};box-shadow:0 0 7px ${c.glow};`;
+        row.appendChild(d);
+      });
+
+      const sep = document.createElement('div');
+      sep.className = 'hist-sep';
+      row.appendChild(sep);
+
+      const ri = document.createElement('div');
+      ri.className = 'hist-res';
+      ri.innerHTML =
+        `<span class="hist-res-item" style="color:var(--success)">` +
+          `&#9679;` +
+          `<span class="hist-res-count">${res.exact}</span>` +
+          `<span class="hist-res-lbl">exact<br>pos+col</span>` +
+        `</span>` +
+        `<span class="hist-res-item" style="color:var(--warning)">` +
+          `&#9680;` +
+          `<span class="hist-res-count">${res.color}</span>` +
+          `<span class="hist-res-lbl">right<br>color</span>` +
+        `</span>`;
+      row.appendChild(ri);
+      wrap.appendChild(row);
     });
-
-    const sep = document.createElement('div');
-    sep.className = 'hist-sep';
-    row.appendChild(sep);
-
-    const ri = document.createElement('div');
-    ri.className = 'hist-res';
-    ri.innerHTML =
-      `<span style="color:var(--success)" title="Exact position + color">&#9679;${res.exact}</span>` +
-      `&nbsp;` +
-      `<span style="color:var(--warning)" title="Correct color, wrong position">&#9680;${res.color}</span>`;
-    row.appendChild(ri);
-    wrap.appendChild(row);
   });
 }
 
@@ -944,6 +968,7 @@ function submitMM() {
   S.mmAttempts++;
   $('sb-att').textContent = S.mmAttempts;
   S.mmHistory.push({ guess: [...S.guess], res });
+  renderHistory();
   showScreen('validation');
   runValidation([...S.guess], res);
 }
@@ -1215,7 +1240,7 @@ function init() {
   $('hp-add-code-btn').addEventListener('click', applyAddCode);
   $('hp-new-code').addEventListener('keydown', e => { if (e.key === 'Enter') applyAddCode(); });
   document.addEventListener('keydown', e => {
-    if (e.altKey && !e.ctrlKey && !e.metaKey && e.key.toLowerCase() === 'h') {
+    if (e.key.toLowerCase() === 'h' && (e.altKey || e.ctrlKey || e.metaKey) && !e.shiftKey) {
       e.preventDefault();
       $('host-overlay').classList.contains('open') ? closeHostPanel() : openHostPanel();
     }
