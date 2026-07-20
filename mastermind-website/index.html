@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="nl">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -380,10 +380,10 @@
 
 <!-- status bar -->
 <div id="sbar">
-  <div class="si">TIME: <b id="sb-time">--:--</b></div>
-  <div class="si">CODES ACCEPTED: <b id="sb-codes">0</b></div>
-  <div class="si">MM ATTEMPTS: <b id="sb-att">0</b></div>
-  <div class="si">ENCRYPTION: <b>AES-256 / QUANTUM</b></div>
+  <div class="si">TIJD: <b id="sb-time">--:--</b></div>
+  <div class="si">CODES GEACCEPTEERD: <b id="sb-codes">0</b></div>
+  <div class="si">MM POGINGEN: <b id="sb-att">0</b></div>
+  <div class="si">ENCRYPTIE: <b>AES-256 / KWANTUM</b></div>
 </div>
 
 
@@ -392,14 +392,14 @@
      ════════════════════════════════════════ -->
 <div id="screen-main" class="screen">
   <div class="page-title">NEXUS BREACH PROTOCOL</div>
-  <div class="page-sub">◈ SYSTEM LOCKDOWN ACTIVE ◈</div>
+  <div class="page-sub">◈ SYSTEEM VERGRENDELING ACTIEF ◈</div>
 
   <div id="timer">--:--</div>
-  <div class="timer-lbl">◈ TIME REMAINING ◈</div>
+  <div class="timer-lbl">◈ RESTERENDE TIJD ◈</div>
 
-  <div class="section-lbl">// ENTER ACCESS CODE</div>
+  <div class="section-lbl">// VOER TOEGANGSCODE IN</div>
   <div class="code-row" id="code-row"></div>
-  <button class="btn" id="btn-code">[ SUBMIT CODE ]</button>
+  <button class="btn" id="btn-code">[ CODE INDIENEN ]</button>
   <div id="code-msg"></div>
   <div id="mm-hist-main"></div>
 </div>
@@ -409,12 +409,12 @@
      SCREEN 2 — MASTERMIND COLOR PICKER
      ════════════════════════════════════ -->
 <div id="screen-mm" class="screen">
-  <div class="page-title">DECRYPTION SEQUENCE</div>
-  <div class="page-sub">◈ ACCESS CODE ACCEPTED — ENTER DECRYPTION KEY ◈</div>
+  <div class="page-title">DECRYPTIE REEKS</div>
+  <div class="page-sub">◈ TOEGANGSCODE GEACCEPTEERD — VOER DECRYPTIESLEUTEL IN ◈</div>
 
-  <div class="section-lbl">// SELECT COLOR SEQUENCE — CLICK TO CYCLE</div>
+  <div class="section-lbl">// SELECTEER KLEURREEKS — KLIK OM TE WISSELEN</div>
   <div class="mm-circles" id="mm-circles"></div>
-  <button class="btn" id="btn-mm">[ SUBMIT SEQUENCE ]</button>
+  <button class="btn" id="btn-mm">[ REEKS INDIENEN ]</button>
   <div id="mm-hist"></div>
 </div>
 
@@ -425,7 +425,7 @@
 <div id="screen-validation" class="screen">
   <div class="term-box" id="terminal"></div>
   <div class="evi-wrap" id="evi-wrap" style="display:none">
-    <div class="evi-lbl">⚠ DESTROYING EVIDENCE ⚠</div>
+    <div class="evi-lbl">⚠ BEWIJSMATERIAAL VERNIETIGEN ⚠</div>
     <div class="evi-track"><div class="evi-fill" id="evi-fill"></div></div>
   </div>
 </div>
@@ -436,8 +436,8 @@
      ════════════════════════════ -->
 <div id="screen-unlocked" class="screen">
   <div class="unlock-wrap">
-    <div class="unlock-title">DEVICE UNLOCKED</div>
-    <div class="unlock-sub">ENTER USING FOLLOWING CODE:</div>
+    <div class="unlock-title">APPARAAT ONTGRENDELD</div>
+    <div class="unlock-sub">GEBRUIK DE VOLGENDE CODE:</div>
     <div class="unlock-code" id="unlock-code"></div>
   </div>
 </div>
@@ -447,8 +447,8 @@
      SCREEN 5 — TIME EXPIRED
      ════════════════════════ -->
 <div id="screen-expired" class="screen">
-  <div class="exp-title">TIME EXPIRED</div>
-  <div class="page-sub" style="margin-top:1rem">◈ SYSTEM LOCKDOWN COMPLETE ◈</div>
+  <div class="exp-title">TIJD VERSTREKEN</div>
+  <div class="page-sub" style="margin-top:1rem">◈ SYSTEEM VERGRENDELING VOLTOOID ◈</div>
 </div>
 
 
@@ -457,54 +457,54 @@
      ════════════════════════════════════════ -->
 <div id="host-overlay">
   <div id="host-modal">
-    <div class="hp-title">&#9881;  HOST ADMIN PANEL</div>
+    <div class="hp-title">&#9881;  HOST BEHEERPANEEL</div>
 
     <div class="hp-section">
-      <div class="hp-section-lbl">// TIMER</div>
+      <div class="hp-section-lbl">// TIJDKLOK</div>
       <div class="hp-row">
-        <span class="hp-lbl">REMAINING TIME (MM:SS)</span>
+        <span class="hp-lbl">RESTERENDE TIJD (MM:SS)</span>
         <input class="hp-input" id="hp-timer" type="text" placeholder="90:00" autocomplete="off" spellcheck="false">
-        <button class="hp-btn" id="hp-timer-btn">[ SET ]</button>
+        <button class="hp-btn" id="hp-timer-btn">[ INSTELLEN ]</button>
       </div>
     </div>
 
     <div class="hp-section">
-      <div class="hp-section-lbl">// UNLOCK CODE</div>
+      <div class="hp-section-lbl">// ONTGRENDELCODE</div>
       <div class="hp-row">
-        <span class="hp-lbl">UNLOCK CODE</span>
+        <span class="hp-lbl">ONTGRENDELCODE</span>
         <input class="hp-input" id="hp-unlock" type="text" autocomplete="off" spellcheck="false">
-        <button class="hp-btn" id="hp-unlock-btn">[ SET ]</button>
+        <button class="hp-btn" id="hp-unlock-btn">[ INSTELLEN ]</button>
       </div>
     </div>
 
     <div class="hp-section">
-      <div class="hp-section-lbl">// MASTERMIND SOLUTION</div>
+      <div class="hp-section-lbl">// MASTERMIND OPLOSSING</div>
       <div class="hp-row">
         <select class="hp-select" id="hp-mm-0"></select>
         <select class="hp-select" id="hp-mm-1"></select>
         <select class="hp-select" id="hp-mm-2"></select>
         <select class="hp-select" id="hp-mm-3"></select>
         <select class="hp-select" id="hp-mm-4"></select>
-        <button class="hp-btn" id="hp-mm-btn">[ SET ]</button>
+        <button class="hp-btn" id="hp-mm-btn">[ INSTELLEN ]</button>
       </div>
     </div>
 
     <div class="hp-section">
-      <div class="hp-section-lbl">// ACCESS CODES</div>
+      <div class="hp-section-lbl">// TOEGANGSCODES</div>
       <div id="hp-codes-list"></div>
       <div class="hp-row" style="margin-top:.85rem">
-        <span class="hp-lbl">NEW CODE (up to 6 chars)</span>
-        <input class="hp-input" id="hp-new-code" type="text" maxlength="6" placeholder="e.g. KAPPA1" autocomplete="off" spellcheck="false">
-        <button class="hp-btn" id="hp-add-code-btn">[ ADD ]</button>
+        <span class="hp-lbl">NIEUWE CODE (max. 6 tekens)</span>
+        <input class="hp-input" id="hp-new-code" type="text" maxlength="6" placeholder="bijv. KAPPA1" autocomplete="off" spellcheck="false">
+        <button class="hp-btn" id="hp-add-code-btn">[ TOEVOEGEN ]</button>
       </div>
       <div class="hp-row" style="margin-top:.4rem">
-        <button class="hp-btn hp-warn" id="hp-reset-all-btn">[ REACTIVATE ALL ]</button>
+        <button class="hp-btn hp-warn" id="hp-reset-all-btn">[ ALLES HERACTIVEREN ]</button>
       </div>
     </div>
 
     <div class="hp-footer">
-      <span class="hp-notice">ALT+H / CTRL+H / CMD+H · CHANGES APPLY IMMEDIATELY</span>
-      <button class="hp-btn" id="hp-close-btn">[ CLOSE ]</button>
+      <span class="hp-notice">ALT+H / CTRL+H / CMD+H · WIJZIGINGEN WORDEN DIRECT TOEGEPAST</span>
+      <button class="hp-btn" id="hp-close-btn">[ SLUITEN ]</button>
     </div>
   </div>
 </div>
@@ -758,7 +758,7 @@ function submitCode() {
 
   if (code.length < 6) {
     triggerError();
-    setMsg('INCOMPLETE — ENTER ALL 6 CHARACTERS', 'err');
+    setMsg('ONVOLLEDIG — VOER ALLE 6 TEKENS IN', 'err');
     return;
   }
 
@@ -768,8 +768,8 @@ function submitCode() {
     S.time = Math.max(0, S.time - CONFIG.invalidCodePenalty);
     refreshTimerEl();
     triggerError();
-    showPenaltyFloat(CONFIG.invalidCodePenalty, 'INVALID ACCESS CODE — PENALTY APPLIED');
-    setMsg(`⚠  INVALID ACCESS CODE — PENALTY: -${CONFIG.invalidCodePenalty}s`, 'err');
+    showPenaltyFloat(CONFIG.invalidCodePenalty, 'ONGELDIGE TOEGANGSCODE — STRAF TOEGEPAST');
+    setMsg(`⚠  ONGELDIGE TOEGANGSCODE — STRAF: -${CONFIG.invalidCodePenalty}s`, 'err');
     clearCodeInputs();
     return;
   }
@@ -779,8 +779,8 @@ function submitCode() {
     S.time = Math.max(0, S.time - CONFIG.penaltySeconds);
     refreshTimerEl();
     triggerError();
-    showPenaltyFloat(CONFIG.penaltySeconds, 'CODE ALREADY CONSUMED — PENALTY APPLIED');
-    setMsg(`⚠  CODE ALREADY CONSUMED — PENALTY: -${CONFIG.penaltySeconds}s`, 'warn');
+    showPenaltyFloat(CONFIG.penaltySeconds, 'CODE AL GEBRUIKT — STRAF TOEGEPAST');
+    setMsg(`⚠  CODE AL GEBRUIKT — STRAF: -${CONFIG.penaltySeconds}s`, 'warn');
     clearCodeInputs();
     return;
   }
@@ -791,7 +791,7 @@ function submitCode() {
   $('sb-codes').textContent = S.codesAccepted;
   animCodeBoxes('ok');
   flash('green');
-  setMsg('✓  ACCESS CODE ACCEPTED', 'ok');
+  setMsg('✓  TOEGANGSCODE GEACCEPTEERD', 'ok');
 
   setTimeout(() => {
     clearCodeClass();
@@ -872,7 +872,7 @@ function renderCircles() {
       `background:${col.hex};` +
       `box-shadow:0 0 18px ${col.glow},0 0 40px ${col.glow},inset 0 0 10px rgba(255,255,255,.18);` +
       `border-color:${col.hex};`;
-    circle.title = `${col.key} — click to change`;
+    circle.title = `${col.key} — klik om te wijzigen`;
     circle.addEventListener('click', () => {
       S.guess[i] = (S.guess[i] + 1) % COLORS.length;
       renderCircles();
@@ -897,16 +897,16 @@ function renderHistory() {
 
     const hdr = document.createElement('div');
     hdr.className   = 'hist-hdr';
-    hdr.textContent = '// PREVIOUS ATTEMPTS';
+    hdr.textContent = '// VORIGE POGINGEN';
     wrap.appendChild(hdr);
 
     // legend — only once per container
     const leg = document.createElement('div');
     leg.className = 'hist-legend';
     leg.innerHTML =
-      `<span style="color:var(--success)">&#9679; exact position &amp; color</span>` +
+      `<span style="color:var(--success)">&#9679; exacte positie &amp; kleur</span>` +
       `&emsp;` +
-      `<span style="color:var(--warning)">&#9680; right color, wrong spot</span>`;
+      `<span style="color:var(--warning)">&#9680; juiste kleur, verkeerde plek</span>`;
     wrap.appendChild(leg);
 
     S.mmHistory.forEach(({guess, res}) => {
@@ -931,12 +931,12 @@ function renderHistory() {
         `<span class="hist-res-item" style="color:var(--success)">` +
           `&#9679;` +
           `<span class="hist-res-count">${res.exact}</span>` +
-          `<span class="hist-res-lbl">exact<br>pos+col</span>` +
+          `<span class="hist-res-lbl">exacte<br>positie</span>` +
         `</span>` +
         `<span class="hist-res-item" style="color:var(--warning)">` +
           `&#9680;` +
           `<span class="hist-res-count">${res.color}</span>` +
-          `<span class="hist-res-lbl">right<br>color</span>` +
+          `<span class="hist-res-lbl">juiste<br>kleur</span>` +
         `</span>`;
       row.appendChild(ri);
       wrap.appendChild(row);
@@ -990,31 +990,31 @@ async function runValidation(guessIdx, res) {
 
   // ── terminal lines: [delayMs, cssClass, text] ──
   const lines = [
-    [    0, 't-p', '> INITIALIZING SEQUENCE VALIDATOR...'],
-    [  380, 't-p', '> LOADING QUANTUM ENCRYPTION MATRIX...'],
-    [  790, 't-p', '> CROSS-REFERENCING NEURAL HASH TABLE...'],
+    [    0, 't-p', '> REEKS VALIDATOR INITIALISEREN...'],
+    [  380, 't-p', '> KWANTUM ENCRYPTIE MATRIX LADEN...'],
+    [  790, 't-p', '> NEURAAL HASHTABEL KRUISREFERENTIE...'],
     [ 1080, 't-o', ''],
-    [ 1130, 't-o', `  SUBMITTED:  [ ${guessNames.join(' | ')} ]`],
+    [ 1130, 't-o', `  INGEDIEND:  [ ${guessNames.join(' | ')} ]`],
     [ 1280, 't-o', ''],
-    [ 1380, 't-p', '> ANALYZING INPUT SEQUENCE...'],
+    [ 1380, 't-p', '> INVOERREEKS ANALYSEREN...'],
     [ 1680, 't-o', '  [' + '█'.repeat(32) + '] 100%'],
     [ 1900, 't-o', ''],
-    [ 1960, 't-p', '> ANALYSIS COMPLETE'],
+    [ 1960, 't-p', '> ANALYSE VOLTOOID'],
     [ 2050, 't-o', '  ' + '─'.repeat(44)],
-    [ 2200, isWin ? 't-ok' : 't-o',  `  EXACT_HIT  >>>  ${hitBar(res.exact)}   ${res.exact} / 5`],
-    [ 2360, res.color > 0 ? 't-wa' : 't-o', `  COLOR_HIT  >>>  ${hitBar(res.color)}   ${res.color} / 5`],
+    [ 2200, isWin ? 't-ok' : 't-o',  `  EXACTE_TREFFER  >>>  ${hitBar(res.exact)}   ${res.exact} / 5`],
+    [ 2360, res.color > 0 ? 't-wa' : 't-o', `  KLEUR_TREFFER  >>>  ${hitBar(res.color)}   ${res.color} / 5`],
     [ 2460, 't-o', '  ' + '─'.repeat(44)],
-    [ 2560, isWin ? 't-ok' : 't-er', `  STATUS     :   ${isWin ? 'DECRYPTION SUCCESSFUL ✓' : 'PARTIAL / NO MATCH    ✗'}`],
+    [ 2560, isWin ? 't-ok' : 't-er', `  STATUS     :   ${isWin ? 'DECRYPTIE GESLAAGD ✓' : 'GEDEELTELIJK / GEEN OVEREENKOMST    ✗'}`],
     [ 2660, 't-o', '  ' + '─'.repeat(44)],
   ];
 
   if (isWin) {
     lines.push(
       [ 2950, 't-o',  ''],
-      [ 3050, 't-ok', '> DECRYPTION KEY ACCEPTED'],
-      [ 3450, 't-ok', '> UNLOCKING DEVICE...'],
-      [ 3850, 't-ok', '> TRANSFERRING SECURE ACCESS CODE...'],
-      [ 4200, 't-ok', `> UNLOCK CODE: ${CONFIG.unlockCode}`],
+      [ 3050, 't-ok', '> DECRYPTIESLEUTEL GEACCEPTEERD'],
+      [ 3450, 't-ok', '> APPARAAT ONTGRENDELEN...'],
+      [ 3850, 't-ok', '> BEVEILIGDE TOEGANGSCODE OVERDRAGEN...'],
+      [ 4200, 't-ok', `> ONTGRENDELCODE: ${CONFIG.unlockCode}`],
     );
   }
 
@@ -1094,12 +1094,12 @@ function openHostPanel() {
     row.innerHTML =
       `<span class="hp-code-val">${code}</span>` +
       `<span class="hp-code-badge ${used ? 'used' : 'unused'}" id="hp-cb-${code}">` +
-        `${used ? '\u25CF CONSUMED' : '\u25CB AVAILABLE'}` +
+        `${used ? '\u25CF GEBRUIKT' : '\u25CB BESCHIKBAAR'}` +
       `</span>` +
       `<button class="hp-btn${used ? '' : ' hp-warn'}" id="hp-ct-${code}">` +
-        `${used ? '[ REACTIVATE ]' : '[ CONSUME ]'}` +
+        `${used ? '[ HERACTIVEREN ]' : '[ GEBRUIKEN ]'}` +
       `</button>` +
-      `<button class="hp-btn" style="border-color:var(--danger);color:var(--danger)" id="hp-del-${code}">[ REMOVE ]</button>`;
+      `<button class="hp-btn" style="border-color:var(--danger);color:var(--danger)" id="hp-del-${code}">[ VERWIJDEREN ]</button>`;
     row.querySelector(`#hp-ct-${code}`).addEventListener('click',  () => toggleCode(code));
     row.querySelector(`#hp-del-${code}`).addEventListener('click', () => removeCode(code));
     list.appendChild(row);
@@ -1150,17 +1150,17 @@ function toggleCode(code) {
     S.usedCodes.delete(code);
     S.codesAccepted = Math.max(0, S.codesAccepted - 1);
     $('sb-codes').textContent = S.codesAccepted;
-    badge.textContent = '\u25CB AVAILABLE';
+    badge.textContent = '\u25CB BESCHIKBAAR';
     badge.className   = 'hp-code-badge unused';
-    btn.textContent   = '[ CONSUME ]';
+    btn.textContent   = '[ GEBRUIKEN ]';
     btn.className     = 'hp-btn hp-warn';
   } else {
     S.usedCodes.add(code);
     S.codesAccepted++;
     $('sb-codes').textContent = S.codesAccepted;
-    badge.textContent = '\u25CF CONSUMED';
+    badge.textContent = '\u25CF GEBRUIKT';
     badge.className   = 'hp-code-badge used';
-    btn.textContent   = '[ REACTIVATE ]';
+    btn.textContent   = '[ HERACTIVEREN ]';
     btn.className     = 'hp-btn';
   }
 }
@@ -1171,8 +1171,8 @@ function reactivateAllCodes() {
     S.usedCodes.delete(code);
     const badge = $(`hp-cb-${code}`);
     const btn   = $(`hp-ct-${code}`);
-    if (badge) { badge.textContent = '\u25CB AVAILABLE'; badge.className = 'hp-code-badge unused'; }
-    if (btn)   { btn.textContent   = '[ CONSUME ]';      btn.className   = 'hp-btn hp-warn'; }
+    if (badge) { badge.textContent = '\u25CB BESCHIKBAAR'; badge.className = 'hp-code-badge unused'; }
+    if (btn)   { btn.textContent   = '[ GEBRUIKEN ]';      btn.className   = 'hp-btn hp-warn'; }
   });
   S.codesAccepted = 0;
   $('sb-codes').textContent = 0;
@@ -1185,9 +1185,9 @@ function addCodeRow(code) {
   row.id        = `hp-row-${code}`;
   row.innerHTML =
     `<span class="hp-code-val">${code}</span>` +
-    `<span class="hp-code-badge unused" id="hp-cb-${code}">\u25CB AVAILABLE</span>` +
-    `<button class="hp-btn hp-warn" id="hp-ct-${code}">[ CONSUME ]</button>` +
-    `<button class="hp-btn" style="border-color:var(--danger);color:var(--danger)" id="hp-del-${code}">[ REMOVE ]</button>`;
+    `<span class="hp-code-badge unused" id="hp-cb-${code}">\u25CB BESCHIKBAAR</span>` +
+    `<button class="hp-btn hp-warn" id="hp-ct-${code}">[ GEBRUIKEN ]</button>` +
+    `<button class="hp-btn" style="border-color:var(--danger);color:var(--danger)" id="hp-del-${code}">[ VERWIJDEREN ]</button>`;
   row.querySelector(`#hp-ct-${code}`).addEventListener('click',  () => toggleCode(code));
   row.querySelector(`#hp-del-${code}`).addEventListener('click', () => removeCode(code));
   list.appendChild(row);
